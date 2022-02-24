@@ -11,9 +11,12 @@
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
-#include <QtWidgets/QTextEdit>
+#include <QtWidgets/QSplitter>
+#include <QtWidgets/QTextBrowser>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
@@ -22,106 +25,122 @@ QT_BEGIN_NAMESPACE
 class Ui_Widget
 {
 public:
-    QWidget *layoutWidget;
+    QVBoxLayout *verticalLayout_4;
+    QHBoxLayout *horizontalLayout_2;
+    QHBoxLayout *horizontalLayout;
     QVBoxLayout *verticalLayout;
     QLabel *label;
     QPushButton *pushButtonChoose1stereo;
-    QWidget *layoutWidget1;
     QVBoxLayout *verticalLayout_2;
     QLabel *label_2;
     QPushButton *pushButtonSplit2mono;
-    QWidget *layoutWidget2;
     QVBoxLayout *verticalLayout_3;
     QLabel *label_3;
     QPushButton *pushButtonTransmit;
-    QTextEdit *textEdit;
-    QWidget *layoutWidget_2;
-    QVBoxLayout *verticalLayout_4;
+    QGridLayout *gridLayout;
     QLabel *label_4;
-    QPushButton *pushButtonShowTargetInfo;
+    QLabel *label_5;
+    QSplitter *splitter;
+    QTextBrowser *textBrowserError;
+    QTextBrowser *textBrowserOutPut;
 
     void setupUi(QWidget *Widget)
     {
         if (Widget->objectName().isEmpty())
             Widget->setObjectName(QString::fromUtf8("Widget"));
-        Widget->resize(1400, 800);
-        Widget->setMinimumSize(QSize(1400, 800));
-        Widget->setMaximumSize(QSize(1400, 800));
-        layoutWidget = new QWidget(Widget);
-        layoutWidget->setObjectName(QString::fromUtf8("layoutWidget"));
-        layoutWidget->setGeometry(QRect(220, 110, 122, 149));
-        verticalLayout = new QVBoxLayout(layoutWidget);
+        Widget->resize(1453, 849);
+        verticalLayout_4 = new QVBoxLayout(Widget);
+        verticalLayout_4->setObjectName(QString::fromUtf8("verticalLayout_4"));
+        horizontalLayout_2 = new QHBoxLayout();
+        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
+        horizontalLayout = new QHBoxLayout();
+        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        verticalLayout = new QVBoxLayout();
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         verticalLayout->setSizeConstraint(QLayout::SetFixedSize);
-        verticalLayout->setContentsMargins(0, 0, 0, 0);
-        label = new QLabel(layoutWidget);
+        label = new QLabel(Widget);
         label->setObjectName(QString::fromUtf8("label"));
 
         verticalLayout->addWidget(label);
 
-        pushButtonChoose1stereo = new QPushButton(layoutWidget);
+        pushButtonChoose1stereo = new QPushButton(Widget);
         pushButtonChoose1stereo->setObjectName(QString::fromUtf8("pushButtonChoose1stereo"));
         pushButtonChoose1stereo->setMinimumSize(QSize(120, 120));
 
         verticalLayout->addWidget(pushButtonChoose1stereo);
 
-        layoutWidget1 = new QWidget(Widget);
-        layoutWidget1->setObjectName(QString::fromUtf8("layoutWidget1"));
-        layoutWidget1->setGeometry(QRect(519, 110, 122, 149));
-        verticalLayout_2 = new QVBoxLayout(layoutWidget1);
+
+        horizontalLayout->addLayout(verticalLayout);
+
+        verticalLayout_2 = new QVBoxLayout();
         verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
         verticalLayout_2->setSizeConstraint(QLayout::SetFixedSize);
-        verticalLayout_2->setContentsMargins(0, 0, 0, 0);
-        label_2 = new QLabel(layoutWidget1);
+        label_2 = new QLabel(Widget);
         label_2->setObjectName(QString::fromUtf8("label_2"));
 
         verticalLayout_2->addWidget(label_2);
 
-        pushButtonSplit2mono = new QPushButton(layoutWidget1);
+        pushButtonSplit2mono = new QPushButton(Widget);
         pushButtonSplit2mono->setObjectName(QString::fromUtf8("pushButtonSplit2mono"));
         pushButtonSplit2mono->setMinimumSize(QSize(120, 120));
 
         verticalLayout_2->addWidget(pushButtonSplit2mono);
 
-        layoutWidget2 = new QWidget(Widget);
-        layoutWidget2->setObjectName(QString::fromUtf8("layoutWidget2"));
-        layoutWidget2->setGeometry(QRect(648, 110, 122, 149));
-        verticalLayout_3 = new QVBoxLayout(layoutWidget2);
+
+        horizontalLayout->addLayout(verticalLayout_2);
+
+        verticalLayout_3 = new QVBoxLayout();
         verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
         verticalLayout_3->setSizeConstraint(QLayout::SetFixedSize);
-        verticalLayout_3->setContentsMargins(0, 0, 0, 0);
-        label_3 = new QLabel(layoutWidget2);
+        label_3 = new QLabel(Widget);
         label_3->setObjectName(QString::fromUtf8("label_3"));
 
         verticalLayout_3->addWidget(label_3);
 
-        pushButtonTransmit = new QPushButton(layoutWidget2);
+        pushButtonTransmit = new QPushButton(Widget);
         pushButtonTransmit->setObjectName(QString::fromUtf8("pushButtonTransmit"));
         pushButtonTransmit->setMinimumSize(QSize(120, 120));
 
         verticalLayout_3->addWidget(pushButtonTransmit);
 
-        textEdit = new QTextEdit(Widget);
-        textEdit->setObjectName(QString::fromUtf8("textEdit"));
-        textEdit->setGeometry(QRect(20, 440, 1351, 331));
-        layoutWidget_2 = new QWidget(Widget);
-        layoutWidget_2->setObjectName(QString::fromUtf8("layoutWidget_2"));
-        layoutWidget_2->setGeometry(QRect(370, 110, 122, 149));
-        verticalLayout_4 = new QVBoxLayout(layoutWidget_2);
-        verticalLayout_4->setObjectName(QString::fromUtf8("verticalLayout_4"));
-        verticalLayout_4->setSizeConstraint(QLayout::SetFixedSize);
-        verticalLayout_4->setContentsMargins(0, 0, 0, 0);
-        label_4 = new QLabel(layoutWidget_2);
+
+        horizontalLayout->addLayout(verticalLayout_3);
+
+
+        horizontalLayout_2->addLayout(horizontalLayout);
+
+
+        verticalLayout_4->addLayout(horizontalLayout_2);
+
+        gridLayout = new QGridLayout();
+        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        label_4 = new QLabel(Widget);
         label_4->setObjectName(QString::fromUtf8("label_4"));
 
-        verticalLayout_4->addWidget(label_4);
+        gridLayout->addWidget(label_4, 0, 0, 1, 1);
 
-        pushButtonShowTargetInfo = new QPushButton(layoutWidget_2);
-        pushButtonShowTargetInfo->setObjectName(QString::fromUtf8("pushButtonShowTargetInfo"));
-        pushButtonShowTargetInfo->setMinimumSize(QSize(120, 120));
+        label_5 = new QLabel(Widget);
+        label_5->setObjectName(QString::fromUtf8("label_5"));
 
-        verticalLayout_4->addWidget(pushButtonShowTargetInfo);
+        gridLayout->addWidget(label_5, 0, 1, 1, 1);
 
+        splitter = new QSplitter(Widget);
+        splitter->setObjectName(QString::fromUtf8("splitter"));
+        splitter->setOrientation(Qt::Horizontal);
+        textBrowserError = new QTextBrowser(splitter);
+        textBrowserError->setObjectName(QString::fromUtf8("textBrowserError"));
+        splitter->addWidget(textBrowserError);
+        textBrowserOutPut = new QTextBrowser(splitter);
+        textBrowserOutPut->setObjectName(QString::fromUtf8("textBrowserOutPut"));
+        splitter->addWidget(textBrowserOutPut);
+
+        gridLayout->addWidget(splitter, 1, 0, 1, 2);
+
+        gridLayout->setRowStretch(1, 4);
+
+        verticalLayout_4->addLayout(gridLayout);
+
+        verticalLayout_4->setStretch(1, 4);
 
         retranslateUi(Widget);
 
@@ -137,8 +156,8 @@ public:
         pushButtonSplit2mono->setText(QCoreApplication::translate("Widget", "split2mono", nullptr));
         label_3->setText(QCoreApplication::translate("Widget", "TextLabel", nullptr));
         pushButtonTransmit->setText(QCoreApplication::translate("Widget", "transmit", nullptr));
-        label_4->setText(QCoreApplication::translate("Widget", "info", nullptr));
-        pushButtonShowTargetInfo->setText(QCoreApplication::translate("Widget", "showTargetInfo", nullptr));
+        label_4->setText(QCoreApplication::translate("Widget", "ErrorInfo", nullptr));
+        label_5->setText(QCoreApplication::translate("Widget", "OutPutInfo", nullptr));
     } // retranslateUi
 
 };

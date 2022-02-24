@@ -17,9 +17,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     main.cpp \
+    processcontrol.cpp \
     widget.cpp
 
 HEADERS += \
+    macro.h \
+    processcontrol.h \
     widget.h
 
 FORMS += \
