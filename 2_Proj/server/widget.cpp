@@ -1,4 +1,5 @@
 #include "widget.h"
+#include "tcpserver.h"
 #include "ui_widget.h"
 #include "processcontrol.h"
 #include "macro.h"
@@ -19,6 +20,13 @@ Widget::Widget(QWidget *parent)
 //    ui->pushButtonShowTargetInfo->setEnabled(false); // abandon temporarily
     ui->pushButtonSplit2mono->setEnabled(false);
     ui->pushButtonTransmit->setEnabled(false);
+
+    /* create TcpServer */
+    m_ui_server = new tcpserver;
+
+    /* connect */
+    connect(&PC::getInstance(), &PC::sendErrorInfo, this, &Widget::displayErrorInfo);
+    connect(&PC::getInstance(), &PC::sendOutPutInfo, this, &Widget::displayOutPutInfo);
 }
 
 Widget::~Widget()
@@ -50,11 +58,25 @@ void Widget::on_pushButtonSplit2mono_clicked()
     QString qstrCmd = FFMPEG_SPLIT_2.arg( m_urlAudioFile.fileName() );
     qDebug() << "qstrCmd" << qstrCmd << endl;
     PC::getInstance().writeCommand(qstrCmd);
+    ui->pushButtonTransmit->setEnabled(true);
 }
 
 // transmit data to client(mobile device)
 void Widget::on_pushButtonTransmit_clicked()
 {
+    m_ui_server->show();
+}
+
+// display process std error infomation in textBrowser
+void Widget::displayErrorInfo(QString msg)
+{
+    ui->textBrowserError->append(msg);
+}
+
+// display process std outPut  info in textBrowser
+void Widget::displayOutPutInfo(QString msg)
+{
+    ui->textBrowserOutPut->append(msg);
 }
 
 // show info of chosen stereo file (some bugs, ignore this function temporary)

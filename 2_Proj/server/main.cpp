@@ -1,4 +1,5 @@
 #include "widget.h"
+#include "tcpserver.h"
 
 #include <QApplication>
 

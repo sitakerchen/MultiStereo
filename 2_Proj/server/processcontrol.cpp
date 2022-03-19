@@ -91,7 +91,7 @@ void ProcessControl::ErrorInfo()
 void ProcessControl::OutPutInfo()
 {
     QString qsOutPutInfo = QString::fromLocal8Bit(m_process->readAllStandardOutput());
-    QMessageBox::information(nullptr, tr("process outPut"), qsOutPutInfo);
+    if (qsOutPutInfo.length() <= 0) return;
     emit sendOutPutInfo(qsOutPutInfo);
 }
 

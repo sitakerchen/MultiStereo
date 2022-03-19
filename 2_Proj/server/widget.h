@@ -10,6 +10,8 @@
 #include <QFileDialog>
 #include <QUrl>
 
+#include "tcpserver.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
 QT_END_NAMESPACE
@@ -26,11 +28,14 @@ private slots:
     void on_pushButtonChoose1stereo_clicked();
     void on_pushButtonSplit2mono_clicked();
     void on_pushButtonTransmit_clicked();
+    void displayErrorInfo(QString msg);
+    void displayOutPutInfo(QString msg);
 //    void on_pushButtonShowTargetInfo_clicked();
 
 private:
     Ui::Widget *ui;
     QUrl m_urlAudioFile;
+    tcpserver *m_ui_server;
 
 };
 #endif // WIDGET_H
