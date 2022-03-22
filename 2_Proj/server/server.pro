@@ -17,12 +17,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 INCLUDEPATH += ./
 
 SOURCES += \
+    ../public/mediafile.cpp \
     main.cpp \
     processcontrol.cpp \
     tcpserver.cpp \
     widget.cpp
 
 HEADERS += \
+    ../public/mediafile.h \
     macro.h \
     processcontrol.h \
     tcpserver.h \

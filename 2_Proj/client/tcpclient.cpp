@@ -18,7 +18,6 @@ tcpclient::tcpclient(QWidget *parent)
     /* 初始化设置 */
     setWindowTitle(tr("Client"));
     ui->plainTextEditRecv->setReadOnly(true); // 接收窗口设为只读
-    ui->pushButtonSend->setEnabled(false); // 未连接状态下无法发送数据
     ui->pushButtonDisconnect->setText(tr("连接"));
     isConnected = false; // 初始化为未连接状态
 }
@@ -43,12 +42,21 @@ void tcpclient::ReadError(QAbstractSocket::SocketError)
     /* 处理TCP连接错误 */
     tcpClient->disconnectFromHost(); // 先断开TCP连接
     ui->pushButtonDisconnect->setText(tr("连接"));
-    ui->pushButtonSend->setEnabled(false);
 
     QMessageBox msgBox;
     msgBox.setText(tr("failed to connect server because %1").arg(tcpClient->errorString())); // 弹出错误消息窗口
 
 }
+
+void tcpclient::SendData(QString data)
+{
+    /* 发送数据到服务器端 */
+    if (data != "")
+    {
+        tcpClient->write(data.toLatin1());
+    }
+}
+
 
 void tcpclient::on_pushButtonDisconnect_clicked()
 {
@@ -67,7 +75,6 @@ void tcpclient::on_pushButtonDisconnect_clicked()
             qDebug() << "connected!" << Qt::endl;
             ui->pushButtonDisconnect->setText(tr("断开"));
             ui->pushButtonDisconnect->setEnabled(true);
-            ui->pushButtonSend->setEnabled(true);
             isConnected = true;
         }
         else
@@ -83,7 +90,6 @@ void tcpclient::on_pushButtonDisconnect_clicked()
     if (tcpClient->state() == QAbstractSocket::UnconnectedState or tcpClient->waitForDisconnected(10000)) // 如果处于未连接状态或者等待一段时间后成功断开连接
     {
         ui->pushButtonDisconnect->setText("连接");
-        ui->pushButtonSend->setEnabled(false);
     }
     isConnected = false;
 }
@@ -96,12 +102,20 @@ void tcpclient::on_pushButtonClearWindow_clicked()
     ui->plainTextEditRecv->setReadOnly(true);
 }
 
-void tcpclient::on_pushButtonSend_clicked()
+void tcpclient::on_pushButton_main_clicked()
 {
-    /* 发送数据到服务器端 */
-    QString data = ui->plainTextEditSend->toPlainText();
-    if (data != "")
-    {
-        tcpClient->write(data.toLatin1());
-    }
+    this->hide();
 }
+
+
+void tcpclient::on_pushButton_tcpSetting_clicked()
+{
+
+}
+
+
+void tcpclient::on_pushButton_music_clicked()
+{
+    // jump to music ui
+}
+

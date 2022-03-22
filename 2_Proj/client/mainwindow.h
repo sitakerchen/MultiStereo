@@ -17,7 +17,9 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_pushButton_clicked();
+    void on_pushButton_tcpSetting_clicked();
+
+    void on_pushButton_music_clicked();
 
 private:
     Ui::MainWindow *ui;

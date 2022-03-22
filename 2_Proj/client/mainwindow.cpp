@@ -14,9 +14,15 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::on_pushButton_clicked()
+void MainWindow::on_pushButton_tcpSetting_clicked()
 {
     tcpclient *client = new tcpclient;
     client->show();
+}
+
+
+void MainWindow::on_pushButton_music_clicked()
+{
+
 }
 
