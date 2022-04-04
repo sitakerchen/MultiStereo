@@ -17,11 +17,13 @@ public:
     ~MainWindow();
 
 private slots:
+    // page button
     void on_pushButton_tcpSetting_clicked();
-
     void on_pushButton_music_clicked();
+    void on_pushButton_main_clicked();
 
 private:
     Ui::MainWindow *ui;
+    tcpclient *m_client;
 };
 #endif // MAINWINDOW_H

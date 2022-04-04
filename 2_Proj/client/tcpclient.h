@@ -5,6 +5,7 @@
 #include <QTcpSocket>
 #include <QHostAddress>
 #include <QMessageBox>
+#include "../../2_Proj/public/mediafile.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class tcpclient; }
@@ -20,8 +21,10 @@ public:
 
 private:
     Ui::tcpclient *ui;
-    QTcpSocket *tcpClient; // 客户端
-    bool isConnected;
+    QTcpSocket *m_tcpClient; // 客户端
+    mediaFile m_mdiFile; // media file and its relevant properties
+    bool m_isConnected;
+    bool m_isStart; // 是否已经开始接收文件
 
 private slots:
     // client slot function
@@ -32,6 +35,8 @@ private slots:
     // button
     void on_pushButtonDisconnect_clicked(); // 断开与服务器的连接
     void on_pushButtonClearWindow_clicked(); // 清除接收窗口
+
+    // page button
     void on_pushButton_main_clicked(); // jump to main page
     void on_pushButton_tcpSetting_clicked(); // jump to tcpSettings page
     void on_pushButton_music_clicked(); // jump to music player page

@@ -6,6 +6,7 @@
 #include <QTcpSocket>
 #include <QNetworkInterface>
 #include <QMessageBox>
+#include "../public/mediafile.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class tcpserver; }
@@ -35,6 +36,8 @@ private slots:
     void on_pushButtonDisconnect_clicked(); // 开启与关闭服务器的监听与连接
     void on_pushButtonClearWindow_clicked(); // 清除接收窗口内容
     void on_pushButtonSend_clicked(); // 发送数据到客户端
+
+    mediaFile m_outFile;
 };
 
 #endif // TCPSERVER_H

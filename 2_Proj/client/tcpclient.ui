@@ -14,8 +14,8 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_3" stretch="5,0">
-    <item>
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0" rowspan="2">
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -108,7 +108,14 @@
       </item>
      </layout>
     </item>
-    <item>
+    <item row="1" column="0">
+     <widget class="QProgressBar" name="progressBar">
+      <property name="value">
+       <number>24</number>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
      <widget class="QGroupBox" name="groupBox_switch">
       <property name="title">
        <string/>
