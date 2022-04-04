@@ -24,6 +24,7 @@ private:
     QTcpServer *m_tcpServer; // tcp服务器
     QList<QTcpSocket*> m_tcpClient; // 客户端列表
     QTcpSocket *m_currentClient; // 现在连接的客户端
+    mediaFile m_outFile;
     bool m_bIsListening; // 是否处于监听开启状态
 
 private slots:
@@ -36,8 +37,6 @@ private slots:
     void on_pushButtonDisconnect_clicked(); // 开启与关闭服务器的监听与连接
     void on_pushButtonClearWindow_clicked(); // 清除接收窗口内容
     void on_pushButtonSend_clicked(); // 发送数据到客户端
-
-    mediaFile m_outFile;
 };
 
 #endif // TCPSERVER_H

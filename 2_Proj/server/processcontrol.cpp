@@ -11,7 +11,7 @@ ProcessControl::ProcessControl(QObject *parent)
 #ifdef Q_OS_WIN
     m_process->start("cmd");
 #else
-    m_process->start("bash");
+    m_process->start("zsh");
 #endif
     m_process->waitForStarted(); // wait for process start
 
