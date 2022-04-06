@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1233</width>
-    <height>862</height>
+    <width>1247</width>
+    <height>900</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -105,13 +105,6 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QCheckBox" name="checkBoxHexDisplay">
-            <property name="text">
-             <string>Hex显示</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QPushButton" name="pushButtonClearWindow">
             <property name="text">
              <string>清除窗口</string>
@@ -177,7 +170,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1233</width>
+     <width>1247</width>
      <height>22</height>
     </rect>
    </property>
@@ -187,7 +180,6 @@
  <tabstops>
   <tabstop>lineEditIP</tabstop>
   <tabstop>lineEditPort</tabstop>
-  <tabstop>checkBoxHexDisplay</tabstop>
   <tabstop>comboBox</tabstop>
   <tabstop>pushButtonDisconnect</tabstop>
   <tabstop>pushButtonClearWindow</tabstop>
