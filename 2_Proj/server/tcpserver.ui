@@ -14,9 +14,9 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_5">
+   <layout class="QVBoxLayout" name="verticalLayout_6">
     <item>
-     <layout class="QGridLayout" name="gridLayout">
+     <layout class="QGridLayout" name="gridLayout" rowstretch="0,0" columnstretch="5,0">
       <item row="0" column="0" rowspan="2">
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
@@ -132,8 +132,8 @@
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>17</width>
-          <height>158</height>
+          <width>20</width>
+          <height>40</height>
          </size>
         </property>
        </spacer>
@@ -145,20 +145,27 @@
       <property name="title">
        <string>FileTransmission</string>
       </property>
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="0">
-        <widget class="QPushButton" name="pushButton_chooseFile">
-         <property name="text">
-          <string>选择文件</string>
-         </property>
-        </widget>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QPushButton" name="pushButton_chooseFile">
+           <property name="text">
+            <string>选择文件</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_sendFile">
+           <property name="text">
+            <string>发送文件</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
-       <item row="0" column="1">
-        <widget class="QPushButton" name="pushButton_sendFile">
-         <property name="text">
-          <string>发送文件</string>
-         </property>
-        </widget>
+       <item>
+        <widget class="QLineEdit" name="lineEdit_FileName"/>
        </item>
       </layout>
      </widget>
@@ -171,7 +178,7 @@
      <x>0</x>
      <y>0</y>
      <width>1233</width>
-     <height>26</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
