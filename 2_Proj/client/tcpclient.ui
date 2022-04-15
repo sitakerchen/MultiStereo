@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>433</width>
+    <width>386</width>
     <height>788</height>
    </rect>
   </property>
@@ -15,6 +15,13 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_3">
+    <item row="1" column="0">
+     <widget class="QProgressBar" name="progressBar">
+      <property name="value">
+       <number>24</number>
+      </property>
+     </widget>
+    </item>
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0" rowspan="2">
@@ -27,7 +34,26 @@
          </widget>
         </item>
         <item>
-         <widget class="QPlainTextEdit" name="plainTextEditRecv"/>
+         <widget class="QScrollArea" name="scrollArea">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>248</width>
+             <height>617</height>
+            </rect>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_4">
+            <item row="0" column="0">
+             <widget class="QPlainTextEdit" name="plainTextEditRecv"/>
+            </item>
+           </layout>
+          </widget>
+         </widget>
         </item>
        </layout>
       </item>
@@ -94,13 +120,6 @@
       </item>
      </layout>
     </item>
-    <item row="1" column="0">
-     <widget class="QProgressBar" name="progressBar">
-      <property name="value">
-       <number>24</number>
-      </property>
-     </widget>
-    </item>
     <item row="2" column="0">
      <widget class="QGroupBox" name="groupBox_switch">
       <property name="title">
@@ -166,7 +185,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>433</width>
+     <width>386</width>
      <height>22</height>
     </rect>
    </property>
@@ -178,7 +197,6 @@
   <tabstop>lineEditPort</tabstop>
   <tabstop>pushButtonDisconnect</tabstop>
   <tabstop>pushButtonClearWindow</tabstop>
-  <tabstop>plainTextEditRecv</tabstop>
  </tabstops>
  <resources/>
  <connections/>

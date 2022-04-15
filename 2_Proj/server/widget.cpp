@@ -10,6 +10,7 @@ Widget::Widget(QWidget *parent)
     , ui(new Ui::Widget)
 {
     ui->setupUi(this);
+    this->setWindowTitle("Main Window");
 
     // set currentDir to application Dir(binary executable file)
     QDir::setCurrent(QCoreApplication::applicationDirPath());
@@ -18,8 +19,10 @@ Widget::Widget(QWidget *parent)
     /* initiate widget*/
     //    widget that can't be toggled before select stereoSound
 //    ui->pushButtonShowTargetInfo->setEnabled(false); // abandon temporarily
-    ui->pushButtonSplit2mono->setEnabled(false);
-    ui->pushButtonTransmit->setEnabled(false);
+    // test
+//    ui->pushButtonSplit2mono->setEnabled(false);
+//    ui->pushButtonTransmit->setEnabled(false);
+    // test
 
     /* create TcpServer */
     m_ui_server = new tcpserver;

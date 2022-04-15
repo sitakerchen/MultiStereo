@@ -7,30 +7,33 @@ MainWindow::MainWindow(QWidget *parent)
 {
     /* create instance */
     ui->setupUi(this);
-    m_client = new tcpclient;
-
-    }
+}
 
 MainWindow::~MainWindow()
 {
     delete ui;
-    delete m_client;
+}
+
+void MainWindow::ShowMyself()
+{
+  this->show();
 }
 
 
 void MainWindow::on_pushButton_tcpSetting_clicked()
 {
-    m_client->show();
+    this->hide();
+    emit show_tcpClient();
 }
-
 
 void MainWindow::on_pushButton_music_clicked()
 {
-
+    this->hide();
+    emit show_musicPlayer();
 }
 
 void MainWindow::on_pushButton_main_clicked()
 {
-
+    ShowMyself();
 }
 

@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <tcpclient.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -16,14 +15,20 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-private slots:
-    // page button
-    void on_pushButton_tcpSetting_clicked();
-    void on_pushButton_music_clicked();
-    void on_pushButton_main_clicked();
+signals:
+    void show_tcpClient();
+    void show_musicPlayer();
 
 private:
     Ui::MainWindow *ui;
-    tcpclient *m_client;
+
+public slots:
+
+    // page button
+    void ShowMyself(); // show page
+
+    void on_pushButton_tcpSetting_clicked();
+    void on_pushButton_music_clicked();
+    void on_pushButton_main_clicked();
 };
 #endif // MAINWINDOW_H

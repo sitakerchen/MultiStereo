@@ -29,6 +29,8 @@ tcpserver::tcpserver(QMainWindow *parent)
   connect(m_tcpServer, SIGNAL(newConnection()), this,
           SLOT(NewConnectionSlot()));
   connect(&m_outFile.timer, &QTimer::timeout, [=]() {
+    //test
+    qDebug() << tr("time out") << endl;
     //关闭定时器
     m_outFile.timer.stop();
 
@@ -40,31 +42,35 @@ tcpserver::tcpserver(QMainWindow *parent)
 tcpserver::~tcpserver() { delete ui; }
 
 void tcpserver::sendData() {
+  qDebug() << tr("send data begin") << endl;
   qint64 len = 0;
   do {
-    //每次发送数据的大小 4K
+    //每次发送数据的大小 up to 4Kb
     char buf[4 * 1024] = {0};
     len = 0;
 
     //往文件中读数据
     len = m_outFile.file.read(buf, sizeof(buf));
+  qDebug() << tr("read data len = ") << len << endl;
     //发送数据，读多少 ，发多少
     len = m_currentClient->write(buf, len);
-
+  qDebug() << tr("send data len = ") << len << endl;
     //发送的数据需要积累
     m_outFile.sendSize += len;
-
   } while (len > 0);
 
   //是否发送文件完毕
   if (m_outFile.sendSize == m_outFile.fileSize) {
     ui->plainTextEditSend->appendPlainText("文件发送完毕");
-    m_outFile.file.close();
-
-    //把客户端关闭
-//    m_currentClient->disconnectFromHost();
-//    m_currentClient->close();
   }
+  else{
+    ui->plainTextEditSend->appendPlainText("文件发送fail");
+    QMessageBox::critical(this, tr("fatal"), tr("send file fail"));
+  }
+  /* end task */
+  ui->pushButton_chooseFile->setEnabled(true);
+  ui->pushButton_sendFile->setEnabled(false);
+  m_outFile.sendSize = 0;
 }
 
 void tcpserver::ReadData() {
@@ -157,15 +163,16 @@ void tcpserver::on_pushButtonDisconnect_clicked() {
 
   /* 关闭所有连接并停止监听窗口 */
   // 有问题，会崩溃：考虑只保留disconnectFromHost其他删掉
-  for (int i = 0; i < m_ListTcpClient.length(); ++i) {
-    m_ListTcpClient[i]->disconnectFromHost();
-    if (m_ListTcpClient[i]->state() == QAbstractSocket::UnconnectedState or
-        m_ListTcpClient[i]->waitForDisconnected(1000)) {
-      QMessageBox::information(this, tr("Success"), tr("disconnect success"));
-    } else {
-      // exception handle
-      QMessageBox::critical(this, tr("Error"), tr("disconnected fail"));
-    }
+  for (int i = 0; i < m_ListTcpClient.size(); ++i) {
+    m_ListTcpClient.at(i)->disconnectFromHost();
+    qDebug() << tr("size of list = %1").arg(m_ListTcpClient.size()) << endl;
+//    if (m_ListTcpClient.at(i)->state() == QAbstractSocket::UnconnectedState or
+//        m_ListTcpClient.at(i)->waitForDisconnected(1000)) {
+//      QMessageBox::information(this, tr("Success"), tr("disconnect success"));
+//    } else {
+//      // exception handle
+//      QMessageBox::critical(this, tr("Error"), tr("disconnected fail"));
+//    }
   }
   m_ListTcpClient.clear();
   m_tcpServer->close();
@@ -218,36 +225,39 @@ void tcpserver::on_pushButtonSend_clicked() {
 }
 
 void tcpserver::on_pushButton_chooseFile_clicked() {
-  QString filePath = QFileDialog::getOpenFileName(this, "open", "../");
+  m_outFile.filePath = QFileDialog::getOpenFileName(this, "open", "../");
 
-  if (false == filePath.isEmpty()) {
+  if (false == m_outFile.filePath.isEmpty()) {
     m_outFile.fileName.clear();
     m_outFile.fileSize = 0;
 
     //获取文件信息
-    QFileInfo info(filePath);
+    QFileInfo info(m_outFile.filePath);
     m_outFile.fileName = info.fileName(); //获取文件名字
     m_outFile.fileSize = info.size();     //获取文件大小
+    qDebug() << tr("file size = ") << m_outFile.fileSize / 1024 << tr("kb") << endl;
 
-    m_outFile.sendSize = 0; //发送文件的大小
+    m_outFile.sendSize = 0; // size of already send part of this file
 
     //只读方式打开文件
     //指定文件的名字
-    m_outFile.file.setFileName(filePath);
+    m_outFile.file.setFileName(m_outFile.filePath);
 
     //打开文件
+    if (m_outFile.file.isOpen()) m_outFile.file.close();
     bool isOk = m_outFile.file.open(QIODevice::ReadOnly);
     if (false == isOk) {
-      qDebug() << "只读方式打开文件失败 78";
+      qDebug() << "只读方式打开文件失败";
+      QMessageBox::critical(this, tr("error"), tr("open file fail! please check access right to selected file!"));
+      return;
     }
 
     //提示打开文件路径
-    ui->lineEdit_FileName->setText(filePath);
+    ui->lineEdit_FileName->setText(m_outFile.filePath);
 
-    ui->pushButton_chooseFile->setEnabled(false);
     ui->pushButton_sendFile->setEnabled(true);
   } else {
-    qDebug() << "选择文件路径出错 62 ";
+    qDebug() << "选择文件路径出错";
   }
 }
 
@@ -265,10 +275,8 @@ void tcpserver::on_pushButton_sendFile_clicked() {
     //防止TCP黏包文件
     //需要通过定时器延时 20ms
     m_outFile.timer.start(20);
+    qDebug() << "头部信息发送success" <<endl;
   } else {
-    qDebug() << "头部信息发送失败 114";
-    m_outFile.file.close();
-    ui->pushButton_chooseFile->setEnabled(true);
-    ui->pushButton_sendFile->setEnabled(false);
+    qDebug() << "头部信息发送失败";
   }
 }

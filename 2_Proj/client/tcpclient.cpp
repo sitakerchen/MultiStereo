@@ -25,9 +25,8 @@ tcpclient::tcpclient(QWidget *parent)
   /* 连接信号与槽 */
   connect(m_tcpClient, SIGNAL(readyRead()), this,
           SLOT(ReadData())); // 连接准备读就绪信号与读数据槽函数
-  connect(m_tcpClient, SIGNAL(error(QAbstractSocket::SocketError)), this,
-          SLOT(ReadError(
-              QAbstractSocket::SocketError))); // 连接错误信号与错误处理槽函数
+  connect(m_tcpClient, &QTcpSocket::errorOccurred, this,
+          &tcpclient::ReadError); // 连接错误信号与错误处理槽函数
 }
 
 tcpclient::~tcpclient() {
@@ -38,12 +37,60 @@ tcpclient::~tcpclient() {
   delete ui;
 }
 
+void tcpclient::save_file()
+{
+    //创建应用文件夹
+    QDir *folder = new QDir;
+    bool exist = folder->exists(PATH_ANDROID_APP_MUSIC);
+    if(exist)
+    {
+        //QMessageBox::warning(this, tr("createDir"), tr("Dir is already existed!"));
+    }
+    else
+    {
+        //创建文件夹
+        bool ok = folder->mkdir(PATH_ANDROID_APP_MUSIC);
+        if(ok)
+            QMessageBox::warning(this, tr("CreateDir"), tr("Create Dir success!"));
+        else
+            QMessageBox::warning(this, tr("CreateDir"), tr("Create Dir fail"));
+    }
+    //存储文件
+    QString qstrFilePath = PATH_ANDROID_APP_MUSIC + m_mdiFile.fileName + ".mp3";
+    QFile file(qstrFilePath);
+    qDebug() << "save file path : " << qstrFilePath << endl;
+    if(!file.open(QIODevice::ReadWrite | QIODevice::))
+    {
+       QMessageBox::warning(this,tr("错误"),tr("打开文件失败，数据保存失败"));
+       return;
+    }
+    else
+    {
+       if(!file.isReadable())
+       {
+           QMessageBox::warning(this,tr("错误"),tr("该文件不可读，数据保存失败"));
+       }
+       else
+       {
+           QTextStream out(&file);
+           for(int i=0;i<dateline;i++){
+               alltext+=mostlist[i].part[0]+"  "+mostlist[i].part[1]+"\n";
+           }
+           out<<alltext<<endl<<QObject::tr("\n date end");
+           QMessageBox::warning(this,tr("信息"),tr("信息存储成功！\n可在系统根目录文件'UIDdate'文件夹中查看！"));
+       }
+    }
+    file.close();
+}
+
 void tcpclient::ReadData() {
   /* recv media file */
   //取出接收的内容
+    static int cnt = 0;
   QByteArray buf = m_tcpClient->readAll();
 
   if (true == m_isStart) { // recv file header
+    cnt = 1;
     m_isStart = false;
 
     //            分段   0   0  1  1  2    2
@@ -56,15 +103,16 @@ void tcpclient::ReadData() {
     m_mdiFile.fileSize = QString(buf).section("##", 1, 1).toInt();
     m_mdiFile.recvSize = 0;
     qDebug() << "file name = " << m_mdiFile.fileName << endl;
-    qDebug() << "file size = " << m_mdiFile.fileSize<< endl;
-
-    //打开文件
+    qDebug() << "file size = " << m_mdiFile.fileSize << endl;
+   //打开文件
     m_mdiFile.file.setFileName(m_mdiFile.fileName);
 
     bool isOk = m_mdiFile.file.open(QIODevice::WriteOnly);
     if (false == isOk) {
       qDebug() << "WriteOnly error 38 ";
-      QMessageBox::critical(this, tr("error"), tr("can't write file, please check your access to file system and then try to connect again!"));
+      QMessageBox::critical(this, tr("error"),
+                            tr("can't write file, please check your access to "
+                               "file system and then try to connect again!"));
 
       m_tcpClient->disconnectFromHost(); //断开连接
       m_tcpClient->close();              //关闭套接字
@@ -73,10 +121,13 @@ void tcpclient::ReadData() {
       return; //如果打开文件失败，中断函数
     }
     //弹出对话框，显示接收文件信息
+    ui->plainTextEditRecv->appendPlainText(
+        tr("recv FileName: %1\nrecv FileSize: %2\n")
+            .arg(m_mdiFile.fileName, m_mdiFile.fileSize));
 
     QString str = QString(tr("接收文件： [%1 : %2 kb]"))
                       .arg(m_mdiFile.fileName)
-                      .arg(m_mdiFile.fileSize / 1024);
+                      .arg(static_cast<double>(m_mdiFile.fileSize) / 1024);
     QMessageBox::information(this, tr("文件信息"), str);
 
     //设置进度条
@@ -86,14 +137,18 @@ void tcpclient::ReadData() {
 
   } else // recv file
   {
+    cnt++;
     qint64 nLen = m_mdiFile.file.write(buf);
 
     if (nLen > 0) {
       m_mdiFile.recvSize += nLen; //累积接收大小
-      qDebug() << tr("current size = ") <<  nLen << endl;
+      qDebug() << tr("current size = ") << nLen << endl;
+      ui->plainTextEditRecv->appendPlainText(tr("current size = ") +
+                                             tr("%1\n").arg(nLen));
     }
     //更新进度条
     ui->progressBar->setValue(m_mdiFile.recvSize / 1024);
+    ui->plainTextEditRecv->appendPlainText(tr("recv size = %1\n").arg(m_mdiFile.recvSize));
 
     if (m_mdiFile.recvSize == m_mdiFile.fileSize) {
       //先给服务发送（接收文件完成的消息）
@@ -107,6 +162,7 @@ void tcpclient::ReadData() {
       m_isStart = true;
     }
   }
+  qDebug() << tr("evoke %1 times").arg(cnt)<< endl;
 }
 
 void tcpclient::ReadError(QAbstractSocket::SocketError) {
@@ -127,6 +183,11 @@ void tcpclient::SendData(QString data) {
   if (data != "") {
     m_tcpClient->write(data.toLatin1());
   }
+}
+
+void tcpclient::ShowMyself()
+{
+  this->show();
 }
 
 void tcpclient::on_pushButtonDisconnect_clicked() {
@@ -172,10 +233,16 @@ void tcpclient::on_pushButtonClearWindow_clicked() {
   ui->plainTextEditRecv->setReadOnly(true);
 }
 
-void tcpclient::on_pushButton_main_clicked() { this->hide(); }
+void tcpclient::on_pushButton_main_clicked() {
+    hide();
+    emit show_mainWindow();
+}
 
-void tcpclient::on_pushButton_tcpSetting_clicked() {}
+void tcpclient::on_pushButton_tcpSetting_clicked() {
+    ShowMyself();
+}
 
 void tcpclient::on_pushButton_music_clicked() {
-  // jump to music ui
+    hide();
+    emit show_musicPlayer();
 }

@@ -1,4 +1,4 @@
-QT       += core gui network
+QT       += core gui network concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -12,15 +12,19 @@ SOURCES += \
     ../public/mediafile.cpp \
     main.cpp \
     mainwindow.cpp \
+    musicplayer.cpp \
     tcpclient.cpp
 
 HEADERS += \
     ../public/mediafile.h \
+    macro.h \
     mainwindow.h \
+    musicplayer.h \
     tcpclient.h
 
 FORMS += \
     mainwindow.ui \
+    musicplayer.ui \
     tcpclient.ui
 
 TARGET = client
@@ -29,3 +33,6 @@ TARGET = client
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    imagefile.qrc

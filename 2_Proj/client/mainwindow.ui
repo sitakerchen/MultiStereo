@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout" stretch="5,0">
     <item>
-     <widget class="QGroupBox" name="groupBox_dispaly">
+     <widget class="QGroupBox" name="groupBox_display">
       <property name="title">
        <string/>
       </property>
