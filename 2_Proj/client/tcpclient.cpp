@@ -13,18 +13,23 @@ tcpclient::tcpclient(QWidget *parent)
   /* 初始化variables */
   setWindowTitle(tr("Client"));
   m_isConnected = false; // 初始化为未连接状态
-  m_isStart = true;
+  Reset_fileRecvStatus();
+
+
+  create_homeDir();
 
   /* initiate widget */
   ui->progressBar->setValue(0);             // set progress bar initial value
   ui->plainTextEditRecv->setReadOnly(true); // 接收窗口设为只读
+  QScroller::grabGesture(ui->plainTextEditRecv, QScroller::TouchGesture);
+  ui->plainTextEditRecv->setTextInteractionFlags (Qt::NoTextInteraction);
   ui->pushButtonDisconnect->setText(tr("连接"));
   ui->lineEditIP->setText("192.168.123.100");
   ui->lineEditPort->setText("30000");
 
   /* 连接信号与槽 */
-  connect(m_tcpClient, SIGNAL(readyRead()), this,
-          SLOT(ReadData())); // 连接准备读就绪信号与读数据槽函数
+  connect(m_tcpClient, &QIODevice::readyRead, this,
+          &tcpclient::ReadData); // 连接准备读就绪信号与读数据槽函数
   connect(m_tcpClient, &QTcpSocket::errorOccurred, this,
           &tcpclient::ReadError); // 连接错误信号与错误处理槽函数
 }
@@ -37,110 +42,151 @@ tcpclient::~tcpclient() {
   delete ui;
 }
 
-void tcpclient::save_file()
-{
-    //创建应用文件夹
-    QDir *folder = new QDir;
-    bool exist = folder->exists(PATH_ANDROID_APP_MUSIC);
-    if(exist)
-    {
-        //QMessageBox::warning(this, tr("createDir"), tr("Dir is already existed!"));
-    }
+void tcpclient::create_homeDir() {
+  //创建应用文件夹
+
+  QDir folder(PATH_ANDROID_BASE);
+  qDebug() << "current dir : " << folder << endl;
+  bool exist = folder.exists(PATH_ANDROID_APP_HOME);
+  if (exist) {
+    // QMessageBox::warning(this, tr("createDir"), tr("Dir is already
+    // existed!"));
+  } else {
+    //创建文件夹
+    bool ok = folder.mkdir("Client");
+    if (ok)
+      QMessageBox::warning(this, tr("CreateDir"),
+                           tr("Create Home Dir success!"));
     else
-    {
-        //创建文件夹
-        bool ok = folder->mkdir(PATH_ANDROID_APP_MUSIC);
-        if(ok)
-            QMessageBox::warning(this, tr("CreateDir"), tr("Create Dir success!"));
-        else
-            QMessageBox::warning(this, tr("CreateDir"), tr("Create Dir fail"));
+      QMessageBox::warning(this, tr("CreateDir"), tr("Create Home Dir fail"));
+  }
+  // create sub dir
+  QVector<QString> dirArray = {PATH_ANDROID_APP_MUSIC};
+  for (auto dir : dirArray) {
+    if (folder.exists(dir))
+      continue;
+    bool ok = folder.mkdir(dir);
+    if (ok == false) {
+      QMessageBox::critical(this, tr("CreateDir"),
+                            tr("Create Dir %1 fail").arg(dir));
+      break;
     }
-    //存储文件
-    QString qstrFilePath = PATH_ANDROID_APP_MUSIC + m_mdiFile.fileName + ".mp3";
-    QFile file(qstrFilePath);
-    qDebug() << "save file path : " << qstrFilePath << endl;
-    if(!file.open(QIODevice::ReadWrite | QIODevice::))
-    {
-       QMessageBox::warning(this,tr("错误"),tr("打开文件失败，数据保存失败"));
-       return;
-    }
-    else
-    {
-       if(!file.isReadable())
-       {
-           QMessageBox::warning(this,tr("错误"),tr("该文件不可读，数据保存失败"));
-       }
-       else
-       {
-           QTextStream out(&file);
-           for(int i=0;i<dateline;i++){
-               alltext+=mostlist[i].part[0]+"  "+mostlist[i].part[1]+"\n";
-           }
-           out<<alltext<<endl<<QObject::tr("\n date end");
-           QMessageBox::warning(this,tr("信息"),tr("信息存储成功！\n可在系统根目录文件'UIDdate'文件夹中查看！"));
-       }
-    }
-    file.close();
+  }
 }
 
 void tcpclient::ReadData() {
-  /* recv media file */
-  //取出接收的内容
-    static int cnt = 0;
-  QByteArray buf = m_tcpClient->readAll();
-
-  if (true == m_isStart) { // recv file header
-    cnt = 1;
-    m_isStart = false;
-
-    //            分段   0   0  1  1  2    2
-    //解析头部信息 buf = "hello##1024##333333"
-    //            QString str = "hello##1024";
-    //            str.section("##",0,0);//这个拆出来hello，其中##是分段标识符，格式为：段1+标识符+段2+标识符+段3+标识符+……
-
-    //初始化
-    m_mdiFile.fileName = QString(buf).section("##", 0, 0);
-    m_mdiFile.fileSize = QString(buf).section("##", 1, 1).toInt();
-    m_mdiFile.recvSize = 0;
-    qDebug() << "file name = " << m_mdiFile.fileName << endl;
-    qDebug() << "file size = " << m_mdiFile.fileSize << endl;
-   //打开文件
-    m_mdiFile.file.setFileName(m_mdiFile.fileName);
-
-    bool isOk = m_mdiFile.file.open(QIODevice::WriteOnly);
-    if (false == isOk) {
-      qDebug() << "WriteOnly error 38 ";
-      QMessageBox::critical(this, tr("error"),
-                            tr("can't write file, please check your access to "
-                               "file system and then try to connect again!"));
-
-      m_tcpClient->disconnectFromHost(); //断开连接
-      m_tcpClient->close();              //关闭套接字
-      m_isConnected = false;             // set status
-
-      return; //如果打开文件失败，中断函数
-    }
-    //弹出对话框，显示接收文件信息
-    ui->plainTextEditRecv->appendPlainText(
-        tr("recv FileName: %1\nrecv FileSize: %2\n")
-            .arg(m_mdiFile.fileName, m_mdiFile.fileSize));
-
-    QString str = QString(tr("接收文件： [%1 : %2 kb]"))
-                      .arg(m_mdiFile.fileName)
-                      .arg(static_cast<double>(m_mdiFile.fileSize) / 1024);
-    QMessageBox::information(this, tr("文件信息"), str);
-
-    //设置进度条
-    ui->progressBar->setMinimum(0);                         //最小值
-    ui->progressBar->setMaximum(m_mdiFile.fileSize / 1024); //最大值
-    ui->progressBar->setValue(0);                           //当前值
-
-  } else // recv file
+  qDebug() << tr("%1").arg(1) << endl;
+  if (true == m_nIsINS) // if in read-INS status
   {
-    cnt++;
+    //取指令
+  qDebug() << tr("%1").arg(2) << endl;
+    qint64 uLen = get_INS_length();
+    if (uLen <= 0)
+    {
+        qDebug() << "INS get INS errro" << endl;
+        QMessageBox::critical(this, tr("INS error"), tr("get INS error"));
+        return;
+    }
+    QByteArray buf = m_tcpClient->read(uLen);
+    if (buf.size() != uLen)
+    {
+        qDebug() << "INS get INS errro" << endl;
+        QMessageBox::critical(this, tr("INS error"), tr("get INS error"));
+        return;
+    }
+    qDebug() << "recv ins: " << buf << endl;
+    QString qstrMsg_error = "";
+    qint64 nType = codecodeSys::decode_type(buf, qstrMsg_error);
+    switch (nType)
+    {
+        case TYPE_ACT:
+        {
+            emit evoke_music(buf);
+            break;
+        }
+        case TYPE_FILE:
+        {
+  qDebug() << tr("%1").arg(4) << endl;
+            //初始化
+            qint64 nRet = codecodeSys::decode_file(buf, m_mdiFile.fileName, m_mdiFile.fileSize, m_mdiFile.channelNumber, qstrMsg_error);
+            if (nRet != 0) // error handle
+            {
+                QMessageBox::critical(this, tr("INS error"), qstrMsg_error);
+                SendData(qstrMsg_error);
+                return;
+            }
+            m_nIsINS = false;
+            m_mdiFile.recvSize = 0;
+            qDebug() << "file name = " << m_mdiFile.fileName << endl;
+            qDebug() << "file size = " << m_mdiFile.fileSize << endl;
+            //存储文件
+            QString qstrFilePath = PATH_ANDROID_APP_MUSIC + m_mdiFile.fileName;
+            ui->plainTextEditRecv->appendPlainText(
+                tr("save path = %1").arg(qstrFilePath));
+            m_mdiFile.file.setFileName(qstrFilePath);
+
+            bool isOk = m_mdiFile.file.open(QIODevice::WriteOnly);
+            if (!isOk) {
+              qDebug() << "WriteOnly error";
+              QMessageBox::critical(this, tr("error"),
+                                    tr("can't write file, please check your access to your phone's file system and then try to receive again!"));
+
+              m_tcpClient->disconnectFromHost(); //断开连接
+              return; //如果打开文件失败，中断函数
+            }
+            //显示接收文件信息
+            QString str = QString(tr("接收文件： [%1 : %2 kb]"))
+                              .arg(m_mdiFile.fileName)
+                              .arg(static_cast<double>(m_mdiFile.fileSize) / 1024);
+            //QMessageBox::information(this, tr("file info"), str); // this funking stuff would block the main thread
+            ui->plainTextEditRecv->appendPlainText(str);
+            //设置进度条
+            ui->progressBar->setMinimum(0);                         //最小值
+            ui->progressBar->setMaximum(m_mdiFile.fileSize / 1024); //最大值
+            ui->progressBar->setValue(0);                           //当前值
+  qDebug() << tr("%1").arg(4.1) << endl;
+  qDebug() << "m_nIsINS: " << m_nIsINS << endl;
+            // test
+//            buf = m_tcpClient->readAll();
+//  qDebug() << "buf size: " << buf.size() << endl;
+            // test
+            break;
+        }
+        case TYPE_MSG:
+        {
+  qDebug() << tr("%1").arg(5) << endl;
+            //初始化
+            ui->plainTextEditRecv->appendPlainText(buf);
+            break;
+        }
+        default:
+        {
+  qDebug() << tr("%1").arg(6) << endl;
+            Reset_fileRecvStatus();
+            SendData(qstrMsg_error);
+            QMessageBox::critical(this, tr("INS error"), qstrMsg_error);
+            return;
+        }
+
+    }
+    // INS process end
+  }
+  else // recv file
+  {
+  qDebug() << tr("%1").arg(7) << endl;
+        RecvFile();
+  }
+}
+
+void tcpclient::RecvFile()
+{
+  qDebug() << tr("%1").arg(8) << endl;
+    /* recv media file */
+    QByteArray buf = m_tcpClient->readAll();
     qint64 nLen = m_mdiFile.file.write(buf);
 
-    if (nLen > 0) {
+    if (nLen > 0)
+    {
       m_mdiFile.recvSize += nLen; //累积接收大小
       qDebug() << tr("current size = ") << nLen << endl;
       ui->plainTextEditRecv->appendPlainText(tr("current size = ") +
@@ -148,10 +194,13 @@ void tcpclient::ReadData() {
     }
     //更新进度条
     ui->progressBar->setValue(m_mdiFile.recvSize / 1024);
-    ui->plainTextEditRecv->appendPlainText(tr("recv size = %1\n").arg(m_mdiFile.recvSize));
+    ui->plainTextEditRecv->appendPlainText(
+        tr("recv size = %1\n").arg(m_mdiFile.recvSize));
 
-    if (m_mdiFile.recvSize == m_mdiFile.fileSize) {
-      //先给服务发送（接收文件完成的消息）
+    if (m_mdiFile.recvSize == m_mdiFile.fileSize)
+    {
+  qDebug() << tr("%1").arg(9) << endl;
+      //发送接收文件完成的消息 respond
       m_tcpClient->write("recv finish");
 
       QMessageBox::information(this, tr("完成"), tr("文件接收完毕"));
@@ -159,10 +208,28 @@ void tcpclient::ReadData() {
       m_mdiFile.file.close(); //关闭文件
 
       /* reset status and wait for next transmission */
-      m_isStart = true;
+      Reset_fileRecvStatus();
     }
-  }
-  qDebug() << tr("evoke %1 times").arg(cnt)<< endl;
+}
+
+void tcpclient::Reset_fileRecvStatus()
+{
+    m_nIsINS = true;
+    ui->progressBar->setValue(0);
+    m_mdiFile.reset_status();
+}
+
+qint64 tcpclient::get_INS_length()
+{
+    QByteArray prefix = m_tcpClient->read(6);
+    if (prefix.back() != '#')
+    {
+        qDebug() << "INS length errro" << endl;
+        qDebug() << "prefix: " << prefix << endl;;
+        QMessageBox::critical(this, tr("INS error"), tr("get INS length error"));
+        return -1;
+    }
+    return prefix.mid(0, 5).toInt();
 }
 
 void tcpclient::ReadError(QAbstractSocket::SocketError) {
@@ -171,11 +238,12 @@ void tcpclient::ReadError(QAbstractSocket::SocketError) {
   m_tcpClient->disconnectFromHost(); // 先断开TCP连接
   ui->pushButtonDisconnect->setText(tr("连接"));
   m_isConnected = false;
-  m_isStart = true;
+  Reset_fileRecvStatus();
 
-  QMessageBox msgBox;
-  msgBox.setText(tr("failed to connect server because %1")
+  QString msg_error(tr("failed to connect server because %1")
                      .arg(m_tcpClient->errorString())); // 弹出错误消息窗口
+  QMessageBox::critical(this, tr("TCP error"), msg_error);
+  qDebug() << "TCP error\n" << msg_error << endl;
 }
 
 void tcpclient::SendData(QString data) {
@@ -185,10 +253,7 @@ void tcpclient::SendData(QString data) {
   }
 }
 
-void tcpclient::ShowMyself()
-{
-  this->show();
-}
+void tcpclient::ShowMyself() { this->show(); }
 
 void tcpclient::on_pushButtonDisconnect_clicked() {
   /* 尝试连接服务器 */
@@ -222,7 +287,7 @@ void tcpclient::on_pushButtonDisconnect_clicked() {
     ui->pushButtonDisconnect->setText("连接");
   }
   m_isConnected = false;
-  m_isStart = true;
+  Reset_fileRecvStatus();
 }
 
 void tcpclient::on_pushButtonClearWindow_clicked() {
@@ -234,15 +299,13 @@ void tcpclient::on_pushButtonClearWindow_clicked() {
 }
 
 void tcpclient::on_pushButton_main_clicked() {
-    hide();
-    emit show_mainWindow();
+  hide();
+  emit show_mainWindow();
 }
 
-void tcpclient::on_pushButton_tcpSetting_clicked() {
-    ShowMyself();
-}
+void tcpclient::on_pushButton_tcpSetting_clicked() { ShowMyself(); }
 
 void tcpclient::on_pushButton_music_clicked() {
-    hide();
-    emit show_musicPlayer();
+  hide();
+  emit show_musicPlayer();
 }

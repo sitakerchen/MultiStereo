@@ -5,6 +5,7 @@
 #include <QApplication>
 
 int main(int argc, char *argv[]) {
+    // page switch
   QApplication a(argc, argv);
   MainWindow w;
   tcpclient client;
@@ -15,6 +16,9 @@ int main(int argc, char *argv[]) {
   QObject::connect(&player, &MusicPlayer::show_mainWindow, &w, &MainWindow::ShowMyself);
   QObject::connect(&client, &tcpclient::show_mainWindow, &w, &MainWindow::ShowMyself);
   QObject::connect(&client, &tcpclient::show_musicPlayer, &player, &MusicPlayer::ShowMyself);
+
+  // music player
+  QObject::connect(&client, &tcpclient::evoke_music, &player, &MusicPlayer::ins_process);
 
   w.show();
   return a.exec();

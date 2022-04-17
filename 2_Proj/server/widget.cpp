@@ -2,7 +2,7 @@
 #include "tcpserver.h"
 #include "ui_widget.h"
 #include "processcontrol.h"
-#include "macro.h"
+#include "../public/macro.h"
 using Qt::endl; using PC = ProcessControl;
 
 Widget::Widget(QWidget *parent)

@@ -39,7 +39,14 @@ tcpserver::tcpserver(QMainWindow *parent)
   });
 }
 
-tcpserver::~tcpserver() { delete ui; }
+tcpserver::~tcpserver()
+{
+    delete ui;
+    if (m_outFile.file.isOpen())
+    {
+        m_outFile.file.close();
+    }
+}
 
 void tcpserver::sendData() {
   qDebug() << tr("send data begin") << endl;
@@ -53,7 +60,10 @@ void tcpserver::sendData() {
     len = m_outFile.file.read(buf, sizeof(buf));
   qDebug() << tr("read data len = ") << len << endl;
     //发送数据，读多少 ，发多少
-    len = m_currentClient->write(buf, len);
+  for (auto client : m_ListTcpClient)
+  {
+    len = client->write(buf, len);
+  }
   qDebug() << tr("send data len = ") << len << endl;
     //发送的数据需要积累
     m_outFile.sendSize += len;
@@ -68,9 +78,9 @@ void tcpserver::sendData() {
     QMessageBox::critical(this, tr("fatal"), tr("send file fail"));
   }
   /* end task */
-  ui->pushButton_chooseFile->setEnabled(true);
-  ui->pushButton_sendFile->setEnabled(false);
   m_outFile.sendSize = 0;
+  m_outFile.file.close(); // reset file status
+  m_outFile.file.open(QIODevice::ReadOnly);
 }
 
 void tcpserver::ReadData() {
@@ -95,12 +105,7 @@ void tcpserver::ReadData() {
     if (QString(buffer) == "recv finish") // file send successfully
     {
       QMessageBox::information(this, tr("File send"), tr("file send finish"));
-      m_outFile.file.close();
-      // cut off connection
-//      m_currentClient->disconnectFromHost();
-//      m_currentClient->close();
     }
-
     IP_Port_Pre = IP_Port;
   }
 }
@@ -165,15 +170,7 @@ void tcpserver::on_pushButtonDisconnect_clicked() {
   // 有问题，会崩溃：考虑只保留disconnectFromHost其他删掉
   for (int i = 0; i < m_ListTcpClient.size(); ++i) {
     m_ListTcpClient.at(i)->disconnectFromHost();
-    qDebug() << tr("size of list = %1").arg(m_ListTcpClient.size()) << endl;
-//    if (m_ListTcpClient.at(i)->state() == QAbstractSocket::UnconnectedState or
-//        m_ListTcpClient.at(i)->waitForDisconnected(1000)) {
-//      QMessageBox::information(this, tr("Success"), tr("disconnect success"));
-//    } else {
-//      // exception handle
-//      QMessageBox::critical(this, tr("Error"), tr("disconnected fail"));
-//    }
-  }
+    qDebug() << tr("size of list = %1").arg(m_ListTcpClient.size()) << endl;  }
   m_ListTcpClient.clear();
   m_tcpServer->close();
 
@@ -190,38 +187,32 @@ void tcpserver::on_pushButtonClearWindow_clicked() {
 
 void tcpserver::on_pushButtonSend_clicked() {
   QString qsSend = ui->plainTextEditSend->toPlainText();
-  //    /* 向所有连接的客户端广播消息 */
-  //    if (ui->comboBox->currentIndex() == 0)
-  //    {
-  //        for (int i = 0 ; i < tcpClient.length() ; ++ i)
-  //            tcpClient[i]->write(data.toLatin1());
-  //    }
-  if (qsSend.length() <= 0 or
-      ui->comboBox->count() ==
-          0) // 如果发送窗口没有消息，或者没有已经建立的连接
+  QString ins = codecodeSys::INS_generator(INS_MSG.arg(qsSend));
+  if (ui->comboBox->count() == 0) // 如果发送窗口没有消息，或者没有已经建立的连接
   {
     QMessageBox::critical(
         this, tr("Error"),
-        tr("send message is empty or no connection avaliable"));
+        tr("no connection avaliable"));
     return;
   }
 
-  /* 向指定客户端发送消息 */
+  // send msg to a specified client
   QString clientIP = ui->comboBox->currentText().split(":")[0];
   qDebug() << "clienIP :" << clientIP << endl;
   int clientPort = ui->comboBox->currentText().split(":")[1].toInt();
   qDebug() << "clienPort :" << clientPort << endl;
 
-  for (int i = 0; i < m_ListTcpClient.length(); ++i) {
-    qDebug() << m_ListTcpClient[i]->peerAddress().toString().split("::ffff:")[1]
-             << endl;
-    if (m_ListTcpClient[i]->peerAddress().toString().split("::ffff:")[1] ==
-            clientIP and
-        m_ListTcpClient[i]->peerPort() == clientPort) {
-      m_ListTcpClient[i]->write(qsSend.toLatin1());
+  for (int i = 0; i < m_ListTcpClient.length(); ++i)
+  {
+    qDebug() << m_ListTcpClient[i]->peerAddress().toString().split("::ffff:")[1] << endl;
+
+    if (m_ListTcpClient[i]->peerAddress().toString().split("::ffff:")[1] == clientIP and m_ListTcpClient[i]->peerPort() == clientPort)
+    {
+      m_ListTcpClient[i]->write(ins.toLatin1());
       return;
     }
   }
+
 }
 
 void tcpserver::on_pushButton_chooseFile_clicked() {
@@ -262,21 +253,57 @@ void tcpserver::on_pushButton_chooseFile_clicked() {
 }
 
 void tcpserver::on_pushButton_sendFile_clicked() {
-  //先发送文件头信息  格式如：文件名##文件大小
-  QString head =
-      QString("%1##%2").arg(m_outFile.fileName).arg(m_outFile.fileSize);
+    if (m_outFile.fileName.isEmpty())
+    {
+        QMessageBox::warning(this, tr("transmission"), tr("no file selected"));
+        return;
+    }
+  // send instruction first
+  QString ins =
+      codecodeSys::INS_generator(INS_FILE_2c.arg(m_outFile.fileName).arg(m_outFile.fileSize));
+    qDebug() << "INS : " << ins << endl;
+  //轮流发送file instruction
+  qint64 len = 0;
+  for (auto client : m_ListTcpClient)
+  {
+    len = client->write(ins.toUtf8());
+  }
 
-  //发送头部的信息
-  qint64 len = m_currentClient->write(head.toUtf8());
-
-  if (len > 0) //头部信息发送成功
+  if (len > 0) // send successfully
   {
     //发送真正的文件信息
-    //防止TCP黏包文件
-    //需要通过定时器延时 20ms
+    //防止指令与文件数据混杂
+    //同时又因为接收端处理的东西比较多，所以需要较长的延时
+    //需要通过定时器延时 1000ms
     m_outFile.timer.start(20);
-    qDebug() << "头部信息发送success" <<endl;
+    qDebug() << "ins send success" <<endl;
   } else {
-    qDebug() << "头部信息发送失败";
+    qDebug() << "ins send fail";
   }
 }
+
+void tcpserver::on_btnPlay_clicked()
+{
+    qint64 nLen = 0;
+    QString ins;
+    static bool player_status = false;
+    if (player_status == false)
+    {
+        ins = codecodeSys::INS_generator(INS_PLAY);
+        for (auto client: m_ListTcpClient)
+        {
+            nLen = client->write(ins.toUtf8());
+        }
+        player_status = true;
+    }
+    else
+    {
+        ins = codecodeSys::INS_generator(INS_PAUSE);
+        for (auto client: m_ListTcpClient)
+        {
+            nLen = client->write(ins.toUtf8());
+        }
+        player_status = false;
+    }
+}
+

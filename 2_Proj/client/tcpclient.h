@@ -1,13 +1,15 @@
 #ifndef TCPCLIENT_H
 #define TCPCLIENT_H
 
-#include "../../2_Proj/public/mediafile.h"
-#include "macro.h"
+#include "../public/mediafile.h"
+#include "../public/macro.h"
+#include "../public/codecodesys.h"
 #include <QHostAddress>
 #include <QMainWindow>
 #include <QDir>
 #include <QMessageBox>
 #include <QTcpSocket>
+#include <QScroller>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -21,18 +23,22 @@ class tcpclient : public QMainWindow {
 public:
   explicit tcpclient(QWidget *parent = nullptr);
   ~tcpclient();
-  void save_file(); // save media file
+  void create_homeDir(); // save media file
+  void RecvFile(); // recv media file from server
+  void Reset_fileRecvStatus(); // reset kinds of variables of mediaFile
+  qint64 get_INS_length(); // return the length of a INS
 
 private:
   Ui::tcpclient *ui;
   QTcpSocket *m_tcpClient; // 客户端
   mediaFile m_mdiFile;     // media file and its relevant properties
   bool m_isConnected;      // 是否处于已连接状态
-  bool m_isStart;          // 是否为文件头部分
+  bool m_nIsINS;          // 是否为文件头部分
 
 signals:
     void show_mainWindow();
     void show_musicPlayer();
+    void evoke_music(QString ins);
 
 public slots:
   // client slot function

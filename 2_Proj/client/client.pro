@@ -1,4 +1,5 @@
 QT       += core gui network concurrent
+QT  += multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -9,6 +10,7 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    ../public/codecodesys.cpp \
     ../public/mediafile.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -16,8 +18,9 @@ SOURCES += \
     tcpclient.cpp
 
 HEADERS += \
+    ../public/codecodesys.h \
+    ../public/macro.h \
     ../public/mediafile.h \
-    macro.h \
     mainwindow.h \
     musicplayer.h \
     tcpclient.h

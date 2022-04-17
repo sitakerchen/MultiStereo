@@ -49,7 +49,17 @@
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
             <item row="0" column="0">
-             <widget class="QPlainTextEdit" name="plainTextEditRecv"/>
+             <widget class="QPlainTextEdit" name="plainTextEditRecv">
+              <property name="mouseTracking">
+               <bool>false</bool>
+              </property>
+              <property name="verticalScrollBarPolicy">
+               <enum>Qt::ScrollBarAlwaysOff</enum>
+              </property>
+              <property name="sizeAdjustPolicy">
+               <enum>QAbstractScrollArea::AdjustIgnored</enum>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>

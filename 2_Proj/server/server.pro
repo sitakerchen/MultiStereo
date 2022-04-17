@@ -17,6 +17,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 INCLUDEPATH += ./
 
 SOURCES += \
+    ../public/codecodesys.cpp \
     ../public/mediafile.cpp \
     main.cpp \
     processcontrol.cpp \
@@ -24,8 +25,9 @@ SOURCES += \
     widget.cpp
 
 HEADERS += \
+    ../public/codecodesys.h \
+    ../public/macro.h \
     ../public/mediafile.h \
-    macro.h \
     processcontrol.h \
     tcpserver.h \
     widget.h
@@ -40,3 +42,6 @@ TARGET = server
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    imagefile.qrc

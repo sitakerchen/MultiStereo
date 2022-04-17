@@ -8,6 +8,8 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include "../public/mediafile.h"
+#include "../public/macro.h"
+#include "../public/codecodesys.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class tcpserver; }
@@ -43,6 +45,7 @@ private slots:
     void on_pushButtonSend_clicked(); // 发送数据到客户端
     void on_pushButton_chooseFile_clicked();
     void on_pushButton_sendFile_clicked();
+    void on_btnPlay_clicked();
 };
 
 #endif // TCPSERVER_H
