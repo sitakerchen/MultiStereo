@@ -14,17 +14,19 @@ const QString PATH_ANDROID_APP_MUSIC = "/storage/emulated/0/Documents/Client/Mus
 /* error code */
 
 
-/* actione object */
+/* action object */
 const qint64 ACT_OBJECT_PLAYER = 0;
+const qint64 ACT_OBJECT_HOMEPAGE = 1;
 
 /* action Name */
 const qint64 ACT_NAME_PLAYBACK = 0;
+const qint64 ACT_NAME_ASSIGN_ID = 1;
 
 /* instructions */
 
 /*
- *     0       1          2                  3                   4
- *  (length#)type##name/actionObject##fileSize/actionName##channelNumber/actionValue
+ *     0       1          2                  3                   4            5
+ *  (length#)type##name/actionObject##fileSize/actionName##channelNumber/actionValue##dueTime
  */
 
 const QString INS_ = "%1##%2##%3##%4";
@@ -39,6 +41,7 @@ const qint64 TYPE_MSG  = 2;
 // type##actionObject##actionName##actionValue
 const QString INS_PLAY  = qs::number(TYPE_ACT) + "##" + qs::number(ACT_OBJECT_PLAYER) + "##" + qs::number(ACT_NAME_PLAYBACK) + "##" + "1";
 const QString INS_PAUSE = qs::number(TYPE_ACT) + "##" + qs::number(ACT_OBJECT_PLAYER) + "##" + qs::number(ACT_NAME_PLAYBACK) + "##" + "0";
+const QString INS_ASSIGN_ID = qs::number(TYPE_ACT) + "##" + qs::number(ACT_OBJECT_HOMEPAGE) + "##" + qs::number(ACT_NAME_ASSIGN_ID) + "##" + "%1";
 
 // file instructions
 //   0     1       2          3

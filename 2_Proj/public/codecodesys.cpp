@@ -1,6 +1,9 @@
 #include "codecodesys.h"
 using Qt::endl;
 
+/* initiate static member variables */
+qint64 codecodeSys::m_delayMs = 800; // delay 800 ms
+
 codecodeSys::codecodeSys(QObject *parent)
     : QObject{parent}
 {
@@ -10,9 +13,21 @@ codecodeSys::codecodeSys(QObject *parent)
 // prefix = 5位10进制数+#
 QString codecodeSys::INS_generator(QString const &qstrIns)
 {
-    qint64 nlen = qstrIns.length();
+    /* add a time section to the tail of INS */
+    QString qstrDueTime = "##" + QString("%1").arg(QTime::currentTime().msecsSinceStartOfDay() + m_delayMs);
+
+    /* calculate length */
+    qint64 nlen = qstrIns.length() + qstrDueTime.length();
+    if (nlen > 99999)
+    {
+        QMessageBox::critical(nullptr, tr("INS error"), tr("instruction too long!!"));
+        return "";
+    }
+
+    /* add prefix(指令的总长度，5位10进制数，不计入总长度) */
     QString prefix = QString("%1").arg(nlen, 5, 10, QLatin1Char('0')) + "#";
-    return prefix + qstrIns;
+
+    return prefix + qstrIns + qstrDueTime;
 }
 
 
@@ -46,7 +61,6 @@ QString codecodeSys::code(QString type, QString name_actObj, QString size_actNam
 
 qint64 codecodeSys::decode_type(QString const &ins, QString &msg_error)
 {
-    // 8421
     qint64 uType = ins.section("##", 0, 0).toInt();
     if (uType < 0 or uType > 2)
     {
@@ -55,6 +69,17 @@ qint64 codecodeSys::decode_type(QString const &ins, QString &msg_error)
         return -1;
     }
     return uType;
+}
+
+qint64 codecodeSys::decode_dueTime(const QString &ins, QString &msg_error)
+{
+    qint64 nRet = ins.section("##", 4, 4).toInt();
+    if (nRet > 86400000 or nRet < 0)
+    {
+        msg_error = "invalid due time";
+        return -1;
+    }
+    return nRet;
 }
 
 /*

@@ -62,6 +62,10 @@
         <file>image/image/remove_dup.png</file>
         <file>image/image/about.png</file>
         <file>image/image/MyPlayer.png</file>
-        <file>image/background/fischl.png</file>
+        <file>image/background/black.jpeg</file>
+        <file>image/image/24gl-next.png</file>
+        <file>image/image/24gl-play.png</file>
+        <file>image/image/24gl-previous.png</file>
+        <file>image/image/24gl-repeat.png</file>
     </qresource>
 </RCC>

@@ -54,6 +54,7 @@ private:
                     delete ProcessControl::m_controller;
                     ProcessControl::m_controller = nullptr;
                 }
+                qDebug() << "realse finished" << Qt::endl;
             }
         };
         static Release m_MemRelease;

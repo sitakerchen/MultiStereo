@@ -32,7 +32,7 @@ class MusicPlayer : public QMainWindow {
 
 public:
   explicit MusicPlayer(QWidget *parent = nullptr);
-  ~MusicPlayer();
+  ~MusicPlayer() override;
 
   // action control
   bool action_playBack(bool act); // act == true: play, act == false: pause

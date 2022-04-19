@@ -1,8 +1,8 @@
-QT       += core gui network
+QT       += core gui network concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++11
+CONFIG += c++17
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -19,22 +19,27 @@ INCLUDEPATH += ./
 SOURCES += \
     ../public/codecodesys.cpp \
     ../public/mediafile.cpp \
+    homePage.cpp \
+    identitycontroller.cpp \
     main.cpp \
     processcontrol.cpp \
-    tcpserver.cpp \
-    widget.cpp
+    rawmediaprocess.cpp \
+    tcpController.cpp
 
 HEADERS += \
     ../public/codecodesys.h \
     ../public/macro.h \
     ../public/mediafile.h \
+    homePage.h \
+    identitycontroller.h \
     processcontrol.h \
-    tcpserver.h \
-    widget.h
+    rawmediaprocess.h \
+    tcpController.h
 
 FORMS += \
-    tcpserver.ui \
-    widget.ui
+    homePage.ui \
+    rawmediaprocess.ui \
+    tcpController.ui
 
 TARGET = server
 

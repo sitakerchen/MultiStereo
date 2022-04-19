@@ -97,15 +97,46 @@ void tcpclient::ReadData() {
     qDebug() << "recv ins: " << buf << endl;
     QString qstrMsg_error = "";
     qint64 nType = codecodeSys::decode_type(buf, qstrMsg_error);
+    qint64 uAct_name, uAct_obj, uAct_val;
+
     switch (nType)
     {
         case TYPE_ACT:
         {
-            emit evoke_music(buf);
+            qDebug() << "ins: " << buf << endl;
+            ui->plainTextEditRecv->appendPlainText(buf + '\n');
+            qint64 dueTime = codecodeSys::decode_dueTime(buf, qstrMsg_error);
+            if (dueTime == -1)
+            {
+                QMessageBox::critical(this, tr("INS error"), qstrMsg_error);
+                SendData(qstrMsg_error);
+                return;
+            }
+
+            //test
+            ui->plainTextEditRecv->appendPlainText("dueTime: " + QString::number((dueTime)));
+            ui->plainTextEditRecv->appendPlainText("current time: " + QString::number(QTime::currentTime().msecsSinceStartOfDay()));
+            //test end
+
+            codecodeSys::decode_act(buf, uAct_obj, uAct_name, uAct_val, qstrMsg_error);
+            if (uAct_obj == ACT_OBJECT_PLAYER)
+            {
+                while (QTime::currentTime().msecsSinceStartOfDay() < dueTime)
+                {
+                    ui->plainTextEditRecv->appendPlainText(QString::number(QTime::currentTime().msecsSinceStartOfDay()) + " waiting~~");
+                } // wait until due time
+                emit evoke_music(buf);
+            }
+            else if (uAct_obj == ACT_OBJECT_HOMEPAGE)
+            {
+                emit evoker_homePage(buf);
+            }
+
             break;
         }
         case TYPE_FILE:
         {
+            qDebug() << "ins: " << buf << endl;
   qDebug() << tr("%1").arg(4) << endl;
             //初始化
             qint64 nRet = codecodeSys::decode_file(buf, m_mdiFile.fileName, m_mdiFile.fileSize, m_mdiFile.channelNumber, qstrMsg_error);
@@ -115,6 +146,7 @@ void tcpclient::ReadData() {
                 SendData(qstrMsg_error);
                 return;
             }
+
             m_nIsINS = false;
             m_mdiFile.recvSize = 0;
             qDebug() << "file name = " << m_mdiFile.fileName << endl;
@@ -126,7 +158,8 @@ void tcpclient::ReadData() {
             m_mdiFile.file.setFileName(qstrFilePath);
 
             bool isOk = m_mdiFile.file.open(QIODevice::WriteOnly);
-            if (!isOk) {
+            if (!isOk)
+            {
               qDebug() << "WriteOnly error";
               QMessageBox::critical(this, tr("error"),
                                     tr("can't write file, please check your access to your phone's file system and then try to receive again!"));
@@ -154,6 +187,7 @@ void tcpclient::ReadData() {
         }
         case TYPE_MSG:
         {
+            qDebug() << "ins: " << buf << endl;
   qDebug() << tr("%1").arg(5) << endl;
             //初始化
             ui->plainTextEditRecv->appendPlainText(buf);
@@ -161,6 +195,7 @@ void tcpclient::ReadData() {
         }
         default:
         {
+            qDebug() << "ins: " << buf << endl;
   qDebug() << tr("%1").arg(6) << endl;
             Reset_fileRecvStatus();
             SendData(qstrMsg_error);

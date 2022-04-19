@@ -2,6 +2,7 @@
 using Qt::endl;
 
 ProcessControl *ProcessControl::m_controller;
+ProcessControl::Release ProcessControl::m_MemRelease;
 
 ProcessControl::ProcessControl(QObject *parent)
     : QObject{parent}

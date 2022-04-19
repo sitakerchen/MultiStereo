@@ -12,8 +12,8 @@ CONFIG += c++11
 SOURCES += \
     ../public/codecodesys.cpp \
     ../public/mediafile.cpp \
+    homePage.cpp \
     main.cpp \
-    mainwindow.cpp \
     musicplayer.cpp \
     tcpclient.cpp
 
@@ -21,12 +21,12 @@ HEADERS += \
     ../public/codecodesys.h \
     ../public/macro.h \
     ../public/mediafile.h \
-    mainwindow.h \
+    homePage.h \
     musicplayer.h \
     tcpclient.h
 
 FORMS += \
-    mainwindow.ui \
+    homePage.ui \
     musicplayer.ui \
     tcpclient.ui
 
