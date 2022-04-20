@@ -87,7 +87,7 @@ qint64 codecodeSys::decode_dueTime(const QString &ins, QString &msg_error)
  *      ins(qstr):     instruction
  *      name(qstr):    name of file
  *      uSize(qint32): size of file
- *      num(qint32):   channels of media
+ *      num(qint32):   index of channel
  *  out:
  *      msg_error(qstr): error message
  *  return:
@@ -110,12 +110,7 @@ qint64 codecodeSys::decode_file(QString const &ins, QString &name, qint64 &uSize
 
 /*
  *  in:
- *      ins(qstr):     instruction
- *      name(qstr):    name of file
- *      uSize(qint32): size of file
- *      num(qint32):   channels of media
  *  out:
- *      msg_error(qstr): error message
  *  return:
  *          a number(qint32) which denote the type of instruction
  *          if error occured, return -1

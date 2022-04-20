@@ -80,6 +80,11 @@ void ProcessControl::writeCommand(QString qstrCmd)
     m_process->write(szCmd, nlen);
 }
 
+bool ProcessControl::wait_forFinished()
+{
+    return m_process->waitForFinished();
+}
+
 // [slot]show error info in the means of pop-up window if an error occured during the process running
 void ProcessControl::ErrorInfo()
 {

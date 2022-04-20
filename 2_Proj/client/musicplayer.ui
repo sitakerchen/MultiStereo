@@ -111,7 +111,7 @@ background-color: rgba(255, 255, 255, 50);
 </string>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="page_0">
           <property name="styleSheet">

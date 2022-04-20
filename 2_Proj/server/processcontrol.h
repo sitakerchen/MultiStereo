@@ -17,6 +17,7 @@ public:
 
     bool setWorkingPath(QString qstrPath = QDir::currentPath());
     void writeCommand(QString qstrCmd);
+    bool wait_forFinished(); // 方便进程同步，但是这玩意很慢不能凡在写函数里！！！
 
 public slots:
     void ErrorInfo();
@@ -54,7 +55,7 @@ private:
                     delete ProcessControl::m_controller;
                     ProcessControl::m_controller = nullptr;
                 }
-                qDebug() << "realse finished" << Qt::endl;
+                qDebug() << "process realse finished" << Qt::endl;
             }
         };
         static Release m_MemRelease;

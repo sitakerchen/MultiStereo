@@ -35,9 +35,76 @@ void rawMediaProcess::on_pushButtonSplit2mono_clicked()
         qDebug() << " url File is invalid " << Qt::endl;
         return ;
     }
-    QString qstrCmd = FFMPEG_SPLIT_2.arg( m_urlAudioFile.fileName() );
+    QString qstrCmd = FFMPEG_SPLIT_2.arg( m_urlAudioFile.fileName(), m_urlAudioFile.fileName().section('.', 0, 0) );
     qDebug() << "qstrCmd" << qstrCmd << endl;
+    ProcessControl::getInstance().setWorkingPath(m_workingPath + m_rawMediaFolder);
+    QDir dir(m_workingPath + m_mediaFolder);
+     if (dir.exists(m_urlAudioFile.fileName().section('.', 0, 0)))
+    {
+        qDebug() << "already exist" << endl;
+        return ;
+    }
     PC::getInstance().writeCommand(qstrCmd);
+    dir.mkdir(m_urlAudioFile.fileName().section('.', 0, 0));
+    QString FilePathList[2] =
+    {
+        (m_workingPath + "%1" + m_urlAudioFile.fileName().section('.', 0, 0) + "_" + FILE_CHANNEL_NAME_2_LEFT + ".wav"),
+        (m_workingPath + "%1" + m_urlAudioFile.fileName().section('.', 0, 0) + "_" + FILE_CHANNEL_NAME_2_RIGHT + ".wav")
+    };
+    ProcessControl::getInstance().wait_forFinished();
+    for (auto path: FilePathList)
+    {
+        QString qstrOldFile = path.arg(m_rawMediaFolder), qstrNewFile = path.arg(m_mediaFolder + m_urlAudioFile.fileName().section('.', 0, 0) + "/");
+        bool ok = dir.rename(qstrOldFile, qstrNewFile);
+        if (ok == false)
+        {
+            QMessageBox::critical(this, __FUNCTION__, tr("split fail!"));
+            return ;
+        }
+    }
+
+}
+
+bool rawMediaProcess::split_2(const QString &srcFilePath)
+{
+    QUrl scrFile(srcFilePath);
+    m_urlAudioFile = scrFile;
+    if ( m_urlAudioFile.isValid() == false)
+    {
+        qDebug() << " url File is invalid " << Qt::endl;
+        return false;
+    }
+    QString qstrCmd = FFMPEG_SPLIT_2.arg( m_urlAudioFile.fileName(), m_urlAudioFile.fileName().section('.', 0, 0) );
+    qDebug() << "qstrCmd" << qstrCmd << endl;
+    ProcessControl::getInstance().setWorkingPath(m_workingPath + m_rawMediaFolder);
+    QDir dir(m_workingPath + m_mediaFolder);
+    if (!dir.exists(m_urlAudioFile.fileName().section('.', 0, 0)))
+    {
+        PC::getInstance().writeCommand(qstrCmd);
+        dir.mkdir(m_urlAudioFile.fileName().section('.', 0, 0));
+        QString FilePathList[2] =
+        {
+            (m_workingPath + "%1" + m_urlAudioFile.fileName().section('.', 0, 0) + "_" + FILE_CHANNEL_NAME_2_LEFT + ".wav"),
+            (m_workingPath + "%1" + m_urlAudioFile.fileName().section('.', 0, 0) + "_" + FILE_CHANNEL_NAME_2_RIGHT + ".wav")
+        };
+        ProcessControl::getInstance().wait_forFinished();
+        for (auto path: FilePathList)
+        {
+            QString qstrOldFile = path.arg(m_rawMediaFolder), qstrNewFile = path.arg(m_mediaFolder + m_urlAudioFile.fileName().section('.', 0, 0) + "/");
+            bool ok = dir.rename(qstrOldFile, qstrNewFile);
+            if (ok == false)
+            {
+                QMessageBox::critical(this, __FUNCTION__, tr("split fail!"));
+                return false;
+            }
+        }
+    }
+    dir.cd(m_urlAudioFile.fileName().section('.', 0, 0));
+    qDebug() << "cur dir : " <<  dir << endl;
+    dir.setFilter( QDir::AllEntries | QDir::NoDotAndDotDot );
+    qint64 nChannelNumber = dir.count();
+    emit evoke_music_synchronization(m_urlAudioFile.fileName().section('.', 0, 0), nChannelNumber); // 有几个文件就算几个声道
+    return true;
 }
 
 void rawMediaProcess::displayErrorInfo(QString msg)

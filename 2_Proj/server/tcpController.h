@@ -6,10 +6,13 @@
 #include <QTcpSocket>
 #include <QNetworkInterface>
 #include <QThread>
+#include <QVector>
 #include <QThreadPool>
 #include <QtConcurrent>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QRunnable>
+#include <QDir>
 #include <QFuture>
 #include <QFileDialog>
 #include "../public/mediafile.h"
@@ -43,6 +46,7 @@ public slots:
     /* send and recv data*/
 public slots:
     void sendFile(); // send media file to client
+    void synchronize_musicFile(const QString &folderName, qint64 channelNumber); // synchronize local music library to client
     void ReadData(); // 读取来自客户端的数据
     qint64 sendData2single(QTcpSocket *client, const QByteArray &data); // send data to one single client
     qint64 sendData2all(const QByteArray &data); // send to all connected client
@@ -51,16 +55,24 @@ public slots:
     void on_pushButtonSend_clicked(); // 发送消息到客户端
     void on_pushButton_sendFile_clicked();
 
-    /* remote control command deliver */
+    /* remote synchronous music player controller */
 public slots:
     void on_btnPlay_clicked();
+    void on_ListWidget_musicName_doubleClicked(const QModelIndex &index);
 
-    /* media file relate */
+    /* media file manage */
 private:
     mediaFile m_outFile;
+    QVector<QDir> m_musicDir; // dir that contains music
+    QList<QFileInfo> m_musicInfo; // file info list of all accessible music
+    QString m_MusicLibBasePath = "D:/Dev/CourseDesign/MultiStereo/3_Resource/MusicLibary/"; // base bath of music library
 
 public slots:
     void on_pushButton_chooseFile_clicked(); // choose a file to be send
+    void on_pushButton_PlayList_clicked(); // refresh the list widget
+
+signals:
+    void evoke_split(const QString &srcFilePath);
 
     /* UI */
 public slots:

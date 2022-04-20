@@ -26,6 +26,7 @@ tcpController::tcpController(QMainWindow *parent)
   ui->lineEditIP->setText("192.168.123.100");
   ui->lineEditPort->setText("30000");
   on_pushButtonDisconnect_clicked(); // default switch on listening
+  m_musicDir.append(QDir("D:/Dev/CourseDesign/MultiStereo/3_Resource/MusicLibrary_raw/"));
 
   /* connect */
   connect(m_tcpServer, &QTcpServer::newConnection, this,
@@ -83,6 +84,38 @@ void tcpController::sendFile() {
   m_outFile.sendSize = 0;
   m_outFile.file.close(); // reset file status
   m_outFile.file.open(QIODevice::ReadOnly);
+}
+
+void tcpController::synchronize_musicFile(const QString &folderName, qint64 channelNumber)
+{
+    QDir dir(m_MusicLibBasePath + folderName);
+    if (dir.exists() == false)
+    {
+        QMessageBox::critical(this, __FUNCTION__, tr("dir not exist"));
+        return ;
+    }
+    QDirIterator dir_iterator(dir.path(), QDir::NoDotAndDotDot | QDir::AllEntries);
+    while (dir_iterator.hasNext())
+    {
+        dir_iterator.next();
+        QFileInfo info(dir_iterator.fileInfo());
+        m_outFile.reset_status();
+        m_outFile.filePath = info.absoluteFilePath();
+        m_outFile.fileName = info.fileName();
+        m_outFile.fileSize = info.size();
+        m_outFile.file.setFileName(m_outFile.filePath);
+        m_outFile.channelNumber = channelNumber;
+
+        if(m_outFile.file.isOpen()) m_outFile.file.close();
+        bool isOk = m_outFile.file.open(QIODevice::ReadOnly);
+        if (false == isOk)
+        {
+            qDebug() << "只读方式打开文件失败";
+            QMessageBox::critical(this, tr("error"), tr("open file fail! please check access right to selected file!"));
+            break;
+        }
+        on_pushButton_sendFile_clicked();
+    }
 }
 
 void tcpController::ReadData() {
@@ -312,24 +345,26 @@ void tcpController::on_pushButton_sendFile_clicked() {
         QMessageBox::warning(this, tr("transmission"), tr("no file selected"));
         return;
     }
-  // send instruction first
-  QString ins =
-      codecodeSys::INS_generator(INS_FILE_2c.arg(m_outFile.fileName).arg(m_outFile.fileSize));
-    qDebug() << "INS : " << ins << endl;
-  //轮流发送file instruction
-  qint64 len = 0;
-  len = sendData2all(ins.toLatin1());
-  if (len > 0) // send successfully
-  {
-    //发送真正的文件信息
-    //防止指令与文件数据混杂
-    //需要通过定时器延时 20ms
-    // 其实这里已经不用了，因为指令有了长度信息。
-    m_outFile.timer.start(20);
-    qDebug() << "ins send success" <<endl;
-  } else {
-    qDebug() << "ins send fail";
-  }
+    // send instruction first
+    QString ins =
+        codecodeSys::INS_generator(INS_FILE.arg(m_outFile.fileName).arg(m_outFile.fileSize).arg(m_outFile.channelNumber));
+      qDebug() << "INS : " << ins << endl;
+    //轮流发送file instruction
+    qint64 len = 0;
+    len = sendData2all(ins.toLatin1());
+    if (len > 0) // send successfully
+    {
+      //发送真正的文件信息
+      //防止指令与文件数据混杂
+      //需要通过定时器延时 20ms
+      // 其实这里已经不用了，因为指令有了长度信息。
+      m_outFile.timer.start(20);
+      qDebug() << "ins send success" <<endl;
+    }
+    else
+    {
+      qDebug() << "ins send fail";
+    }
 }
 
 void tcpController::on_btnPlay_clicked()
@@ -348,5 +383,36 @@ void tcpController::on_btnPlay_clicked()
         sendData2all(ins.toLatin1());
         player_status = false;
     }
+}
+
+
+void tcpController::on_pushButton_PlayList_clicked()
+{
+    QStringList filters;
+    m_musicInfo.clear();
+    filters << QString("*.mp3");
+
+    ui->ListWidget_musicName->clear();
+
+    for (auto path: m_musicDir)
+    {
+        QDirIterator dir_iterator(path.path(), filters, QDir::Files | QDir::NoSymLinks,QDirIterator::Subdirectories);
+        while (dir_iterator.hasNext())
+        {
+            dir_iterator.next();
+            m_musicInfo.append(dir_iterator.fileInfo());
+            qDebug()<<"name:"<<dir_iterator.fileInfo().fileName()<<"path:"<<dir_iterator.fileInfo().filePath();
+            ui->ListWidget_musicName->addItem(dir_iterator.fileName());
+        }
+    }
+    for (auto music: m_musicInfo)
+    {
+        emit evoke_split(music.absoluteFilePath());
+    }
+}
+
+void tcpController::on_ListWidget_musicName_doubleClicked(const QModelIndex &index)
+{
+
 }
 

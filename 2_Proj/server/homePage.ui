@@ -72,7 +72,7 @@
          <enum>QFrame::Plain</enum>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="page">
          <layout class="QGridLayout" name="gridLayout_8">
@@ -127,7 +127,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QComboBox" name="comboBox_singleLeft"/>
+               <widget class="QComboBox" name="comboBox_2left"/>
               </item>
              </layout>
             </item>
@@ -154,7 +154,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QComboBox" name="comboBox_singleRight"/>
+               <widget class="QComboBox" name="comboBox_2right"/>
               </item>
              </layout>
             </item>
@@ -258,7 +258,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QComboBox" name="comboBox_leftFor"/>
+                   <widget class="QComboBox" name="comboBox_5leftFor"/>
                   </item>
                  </layout>
                 </item>
@@ -289,7 +289,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QComboBox" name="comboBox_Left"/>
+                   <widget class="QComboBox" name="comboBox_5left"/>
                   </item>
                  </layout>
                 </item>
@@ -346,7 +346,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QComboBox" name="comboBox_leftBac"/>
+                   <widget class="QComboBox" name="comboBox_5leftBac"/>
                   </item>
                  </layout>
                 </item>
@@ -381,7 +381,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QComboBox" name="comboBox_rightFor"/>
+                   <widget class="QComboBox" name="comboBox_5rightFor"/>
                   </item>
                  </layout>
                 </item>
@@ -438,7 +438,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QComboBox" name="comboBox_right"/>
+                   <widget class="QComboBox" name="comboBox_5right"/>
                   </item>
                  </layout>
                 </item>
@@ -469,7 +469,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QComboBox" name="comboBox_rightBac"/>
+                   <widget class="QComboBox" name="comboBox_5rightBac"/>
                   </item>
                  </layout>
                 </item>

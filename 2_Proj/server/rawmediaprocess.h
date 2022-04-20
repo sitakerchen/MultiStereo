@@ -32,6 +32,9 @@ private:
     /* file */
 private:
     QUrl m_urlAudioFile;
+    QString m_workingPath = "D:/Dev/CourseDesign/MultiStereo/3_Resource/";
+    QString m_rawMediaFolder = "MusicLibrary_raw/";
+    QString m_mediaFolder = "MusicLibary/";
 
     /* processcontrol */
 private slots:
@@ -46,8 +49,14 @@ public slots:
     void on_pushButtonChoose1stereo_clicked(); // choose 1 stereo music file
 
     void on_pushButtonSplit2mono_clicked(); // split stereo file into seperate channel (split into several files)
-
 public slots:
+    bool split_2(const QString &srcFilePath); // split double track file into two individual file
+
+signals:
+    void evoke_music_synchronization(const QString &folderName, qint64 channelNumber); // transmit processed music files to client
+
+
+private slots:
     void displayErrorInfo(QString msg); // display process std error infomation in textBrowser
 
     void displayOutPutInfo(QString msg); // display process std outPut  info in textBrowser

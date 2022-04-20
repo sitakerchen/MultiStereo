@@ -16,6 +16,10 @@ homePage::homePage(QWidget *parent)
     /* create tcpController and mediaProcess*/
     m_tcpCtr = new tcpController;
     m_MedaProces = new rawMediaProcess;
+
+    /* connect */
+    connect(m_tcpCtr, &tcpController::evoke_split, m_MedaProces, &rawMediaProcess::split_2);
+    connect(m_MedaProces, &rawMediaProcess::evoke_music_synchronization, m_tcpCtr, &tcpController::synchronize_musicFile);
 }
 
 homePage::~homePage()

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1180</width>
-    <height>824</height>
+    <width>1218</width>
+    <height>961</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -30,8 +30,7 @@
        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="styleSheet">
-       <string notr="true">
-</string>
+       <string notr="true"/>
       </property>
       <property name="currentIndex">
        <number>0</number>
@@ -566,31 +565,6 @@ margin: -6 0px;
                </property>
               </spacer>
              </item>
-             <item row="1" column="1">
-              <widget class="QLabel" name="label_6">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>35</width>
-                 <height>35</height>
-                </size>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-               <property name="pixmap">
-                <pixmap resource="imagefile.qrc">:/image/image/image/myMusicList.png</pixmap>
-               </property>
-               <property name="scaledContents">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
              <item row="1" column="2">
               <spacer name="horizontalSpacer_10">
                <property name="orientation">
@@ -617,6 +591,42 @@ margin: -6 0px;
                </property>
               </spacer>
              </item>
+             <item row="1" column="1">
+              <widget class="QPushButton" name="pushButton_PlayList">
+               <property name="minimumSize">
+                <size>
+                 <width>35</width>
+                 <height>35</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>35</width>
+                 <height>35</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton
+{
+background-position:center center;
+border:none;
+}</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="imagefile.qrc">
+                 <normaloff>:/image/image/image/myMusicList.png</normaloff>:/image/image/image/myMusicList.png</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>35</width>
+                 <height>35</height>
+                </size>
+               </property>
+              </widget>
+             </item>
             </layout>
            </item>
            <item>
@@ -637,22 +647,103 @@ margin: -6 0px;
         </item>
         <item row="1" column="0">
          <widget class="QGroupBox" name="groupBox_3">
+          <property name="styleSheet">
+           <string notr="true">QGroupBox#groupBox_3
+{
+	border-image: url(:/image/image/background/default.jpg);
+border-radius: 20px;
+}</string>
+          </property>
           <property name="title">
            <string/>
           </property>
-          <layout class="QGridLayout" name="gridLayout_6">
-           <item row="0" column="0">
-            <layout class="QVBoxLayout" name="verticalLayout_6">
-             <item>
-              <widget class="QSlider" name="volumeSlider">
-               <property name="minimumSize">
-                <size>
-                 <width>35</width>
-                 <height>170</height>
-                </size>
-               </property>
-               <property name="styleSheet">
-                <string notr="true"> QSlider 
+          <widget class="QListWidget" name="ListWidget_musicName">
+           <property name="geometry">
+            <rect>
+             <x>880</x>
+             <y>30</y>
+             <width>241</width>
+             <height>541</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">color: rgb(255, 255, 255);
+background-color: rgba(255, 255, 255, 50);
+</string>
+           </property>
+           <property name="horizontalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="btnVolume">
+           <property name="geometry">
+            <rect>
+             <x>11</x>
+             <y>187</y>
+             <width>35</width>
+             <height>35</height>
+            </rect>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>35</width>
+             <height>35</height>
+            </size>
+           </property>
+           <property name="cursor">
+            <cursorShape>PointingHandCursor</cursorShape>
+           </property>
+           <property name="toolTip">
+            <string>音量控制</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton
+{
+background-image: url(:/image/image/image/music-voice.png);
+background-repeat:no-repeat;
+background-position:center center;
+border:none;
+}
+
+QPushButton:hover{
+background-image: url(:/image/image/image-hover/music-voice-hover.png);
+background-repeat:no-repeat;
+background-position:center center;
+}
+
+QPushButton:pressed{
+background-image: url(:/image/image/image/music-voice.png);
+background-repeat:no-repeat;
+background-position:center center;
+}
+</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+          <widget class="QSlider" name="volumeSlider">
+           <property name="geometry">
+            <rect>
+             <x>11</x>
+             <y>11</y>
+             <width>35</width>
+             <height>170</height>
+            </rect>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>35</width>
+             <height>170</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true"> QSlider 
     {  
         background-color: rgba(255,255,255,0.2);
         min-width:5px; 
@@ -683,62 +774,17 @@ margin: -6 0px;
  margin: -0 -4px; 
 	border-image: url(:/image/image/image/volumeHandle.png);
      }</string>
-               </property>
-               <property name="maximum">
-                <number>100</number>
-               </property>
-               <property name="value">
-                <number>100</number>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btnVolume">
-               <property name="minimumSize">
-                <size>
-                 <width>35</width>
-                 <height>35</height>
-                </size>
-               </property>
-               <property name="cursor">
-                <cursorShape>PointingHandCursor</cursorShape>
-               </property>
-               <property name="toolTip">
-                <string>音量控制</string>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">QPushButton
-{
-background-image: url(:/image/image/image/music-voice.png);
-background-repeat:no-repeat;
-background-position:center center;
-border:none;
-}
-
-QPushButton:hover{
-background-image: url(:/image/image/image-hover/music-voice-hover.png);
-background-repeat:no-repeat;
-background-position:center center;
-}
-
-QPushButton:pressed{
-background-image: url(:/image/image/image/music-voice.png);
-background-repeat:no-repeat;
-background-position:center center;
-}
-</string>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="value">
+            <number>100</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+          </widget>
          </widget>
         </item>
        </layout>
@@ -907,8 +953,8 @@ background-position:center center;
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1180</width>
-     <height>22</height>
+     <width>1218</width>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuController">
@@ -936,7 +982,6 @@ background-position:center center;
  </tabstops>
  <resources>
   <include location="imagefile.qrc"/>
-  <include location="C:/Users/starkchen/Downloads/Compressed/Qt5-MusicPlayer-master/LightMusicPlayer/LightMusicPlayer/imagefile.qrc"/>
  </resources>
  <connections/>
 </ui>

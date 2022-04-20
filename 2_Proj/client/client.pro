@@ -1,5 +1,5 @@
 QT       += core gui network concurrent
-QT  += multimedia
+QT  += multimedia core5compat
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

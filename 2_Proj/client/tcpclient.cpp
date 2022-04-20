@@ -81,17 +81,18 @@ void tcpclient::ReadData() {
     //取指令
   qDebug() << tr("%1").arg(2) << endl;
     qint64 uLen = get_INS_length();
+    if (uLen == -2) return; // read noting, do nothing
     if (uLen <= 0)
     {
-        qDebug() << "INS get INS errro" << endl;
-        QMessageBox::critical(this, tr("INS error"), tr("get INS error"));
+        qDebug() << "[INS], get INS length errro" << endl;
+        m_tcpClient->readAll(); // empty recv buf
         return;
     }
     QByteArray buf = m_tcpClient->read(uLen);
     if (buf.size() != uLen)
     {
-        qDebug() << "INS get INS errro" << endl;
-        QMessageBox::critical(this, tr("INS error"), tr("get INS error"));
+        ui->plainTextEditRecv->appendPlainText("read INS errro");
+        m_tcpClient->readAll(); // empty recv buf
         return;
     }
     qDebug() << "recv ins: " << buf << endl;
@@ -109,6 +110,7 @@ void tcpclient::ReadData() {
             if (dueTime == -1)
             {
                 QMessageBox::critical(this, tr("INS error"), qstrMsg_error);
+                m_tcpClient->readAll(); // empty recv buf
                 SendData(qstrMsg_error);
                 return;
             }
@@ -217,7 +219,7 @@ void tcpclient::RecvFile()
 {
   qDebug() << tr("%1").arg(8) << endl;
     /* recv media file */
-    QByteArray buf = m_tcpClient->readAll();
+    QByteArray buf = m_tcpClient->read(m_mdiFile.fileSize - m_mdiFile.recvSize);
     qint64 nLen = m_mdiFile.file.write(buf);
 
     if (nLen > 0)
@@ -238,12 +240,14 @@ void tcpclient::RecvFile()
       //发送接收文件完成的消息 respond
       m_tcpClient->write("recv finish");
 
-      QMessageBox::information(this, tr("完成"), tr("文件接收完毕"));
+      ui->plainTextEditRecv->appendPlainText(tr("文件%1接收完毕\n").arg(m_mdiFile.fileName));
 
       m_mdiFile.file.close(); //关闭文件
 
       /* reset status and wait for next transmission */
       Reset_fileRecvStatus();
+      /* incase dismiss next INS */
+      ReadData();
     }
 }
 
@@ -257,10 +261,14 @@ void tcpclient::Reset_fileRecvStatus()
 qint64 tcpclient::get_INS_length()
 {
     QByteArray prefix = m_tcpClient->read(6);
+    if (prefix.isEmpty())
+    {
+        return -2;
+    }
     if (prefix.back() != '#')
     {
-        qDebug() << "INS length errro" << endl;
-        qDebug() << "prefix: " << prefix << endl;;
+        ui->plainTextEditRecv->appendPlainText("INS length errro");
+        ui->plainTextEditRecv->appendPlainText(tr("prefix: %1").arg(prefix.constData()));
         QMessageBox::critical(this, tr("INS error"), tr("get INS length error"));
         return -1;
     }
