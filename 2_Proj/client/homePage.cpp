@@ -14,11 +14,8 @@ homePage::~homePage()
     delete ui;
 }
 
-void homePage::ins_process(QString ins)
+void homePage::ins_process(qint64 uAct_name, qint64 uAct_val)
 {
-    qint64 uACt_obj, uAct_name, uAct_val;
-    QString qstrMsg_error;
-    codecodeSys::decode_act(ins, uACt_obj, uAct_name, uAct_val, qstrMsg_error);
     if (uAct_name == ACT_NAME_ASSIGN_ID)
     {
         setId(uAct_val);

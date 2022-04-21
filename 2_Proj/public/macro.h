@@ -49,7 +49,10 @@ const qint64 ACT_OBJECT_HOMEPAGE = 1;
 
 /* action Name */
 const qint64 ACT_NAME_PLAYBACK = 0;
-const qint64 ACT_NAME_ASSIGN_ID = 1;
+const qint64 ACT_NAME_REPLAY = 1;
+const qint64 ACT_NAME_ASSIGN_ID = 2;
+
+const qint64 ACT_NAME_ASSIGN_CHANNEL = 10;
 
 /* instructions */
 

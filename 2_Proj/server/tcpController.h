@@ -58,6 +58,7 @@ public slots:
     /* remote synchronous music player controller */
 public slots:
     void on_btnPlay_clicked();
+    void on_pushButton_rePlay_clicked();
     void on_ListWidget_musicName_doubleClicked(const QModelIndex &index);
 
     /* media file manage */

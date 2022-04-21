@@ -22,7 +22,7 @@ private:
 
     /* INS process */
 public slots:
-    void ins_process(QString ins);
+    void ins_process(qint64 uAct_name, qint64 uAct_val);
 
     /* status display */
 public slots:

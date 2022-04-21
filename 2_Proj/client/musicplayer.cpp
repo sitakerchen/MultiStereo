@@ -33,6 +33,13 @@ bool MusicPlayer::action_Volume(qint64 per)
     return true;
 }
 
+bool MusicPlayer::action_rePlay()
+{
+    m_player.stop();
+    m_player.play();
+    return true;
+}
+
 
 
 void MusicPlayer::ShowMyself()
@@ -68,10 +75,18 @@ void MusicPlayer::on_btnPlay_clicked()
     }
 }
 
-void MusicPlayer::ins_process(QString ins)
+void MusicPlayer::ins_process(qint64 uAct_name, qint64 uAct_val)
 {
-    qint64 op;
-    qint64 temp = ins.section("##", 3, 3).toInt();
-    action_playBack(temp);
+    qDebug() << "in music" << endl;
+    switch (uAct_name) {
+    case ACT_NAME_PLAYBACK:
+        action_playBack(uAct_val);
+        break;
+    case ACT_NAME_REPLAY:
+        action_rePlay();
+        break;
+    default:
+        break;
+    }
 }
 

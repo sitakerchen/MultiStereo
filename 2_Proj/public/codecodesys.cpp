@@ -2,7 +2,9 @@
 using Qt::endl;
 
 /* initiate static member variables */
-qint64 codecodeSys::m_delayMs = 800; // delay 800 ms
+qint64 codecodeSys::m_delayMs = 200; // delay 200 ms
+qint64 codecodeSys::m_timePerIns = 20; // ms
+qint64 codecodeSys::m_clientNumber = 0;
 
 codecodeSys::codecodeSys(QObject *parent)
     : QObject{parent}
@@ -10,11 +12,16 @@ codecodeSys::codecodeSys(QObject *parent)
 
 }
 
+void codecodeSys::setClientNumbers(qint64 num)
+{
+    m_clientNumber = num;
+}
+
 // prefix = 5位10进制数+#
 QString codecodeSys::INS_generator(QString const &qstrIns)
 {
     /* add a time section to the tail of INS */
-    QString qstrDueTime = "##" + QString("%1").arg(QTime::currentTime().msecsSinceStartOfDay() + m_delayMs);
+    QString qstrDueTime = "##" + QString("%1").arg(QTime::currentTime().msecsSinceStartOfDay() + m_delayMs + m_clientNumber * m_timePerIns);
 
     /* calculate length */
     qint64 nlen = qstrIns.length() + qstrDueTime.length();
@@ -57,6 +64,13 @@ QString codecodeSys::code(QString type, QString name_actObj, QString size_actNam
 //    }
     QString qstrRes = INS_.arg(type, name_actObj, size_actName, num_actVal);
     return qstrRes;
+}
+
+QString codecodeSys::code_act(qint64 uAct_obj, qint64 uAct_name,qint64 uAct_val )
+{
+    QString qstrIns = INS_.arg(TYPE_ACT).arg(uAct_obj).arg(uAct_name).arg( uAct_val);
+    qDebug() << "generate act INS: " << qstrIns << endl;
+    return qstrIns;
 }
 
 qint64 codecodeSys::decode_type(QString const &ins, QString &msg_error)

@@ -14,7 +14,8 @@ tcpclient::tcpclient(QWidget *parent)
   setWindowTitle(tr("Client"));
   m_isConnected = false; // 初始化为未连接状态
   Reset_fileRecvStatus();
-
+  m_timerDelay.setTimerType(Qt::PreciseTimer);
+  m_timerDelay.setSingleShot(true); // by default the timer will timeOut every intervals
 
   create_homeDir();
 
@@ -35,6 +36,7 @@ tcpclient::tcpclient(QWidget *parent)
 }
 
 tcpclient::~tcpclient() {
+  if (m_isConnected == true) on_pushButtonDisconnect_clicked();
   if (m_tcpClient) {
     delete m_tcpClient;
     m_tcpClient = nullptr;
@@ -109,37 +111,42 @@ void tcpclient::ReadData() {
             qint64 dueTime = codecodeSys::decode_dueTime(buf, qstrMsg_error);
             if (dueTime == -1)
             {
-                QMessageBox::critical(this, tr("INS error"), qstrMsg_error);
+                ui->plainTextEditRecv->appendPlainText("[INS], get dueTime error");
                 m_tcpClient->readAll(); // empty recv buf
                 SendData(qstrMsg_error);
                 return;
             }
 
             //test
-            ui->plainTextEditRecv->appendPlainText("dueTime: " + QString::number((dueTime)));
+            ui->plainTextEditRecv->appendPlainText("due     time: " + QString::number((dueTime)));
             ui->plainTextEditRecv->appendPlainText("current time: " + QString::number(QTime::currentTime().msecsSinceStartOfDay()));
             //test end
 
             codecodeSys::decode_act(buf, uAct_obj, uAct_name, uAct_val, qstrMsg_error);
-            if (uAct_obj == ACT_OBJECT_PLAYER)
-            {
-                while (QTime::currentTime().msecsSinceStartOfDay() < dueTime)
-                {
-                    ui->plainTextEditRecv->appendPlainText(QString::number(QTime::currentTime().msecsSinceStartOfDay()) + " waiting~~");
-                } // wait until due time
-                emit evoke_music(buf);
-            }
-            else if (uAct_obj == ACT_OBJECT_HOMEPAGE)
-            {
-                emit evoker_homePage(buf);
-            }
 
+            qint64 uDelayTime = dueTime - QTime::currentTime().msecsSinceStartOfDay();
+//            ui->plainTextEditRecv->appendPlainText(tr("delay time = %1").arg(uDelayTime));
+            /* start delay */
+            QTimer::singleShot(uDelayTime, Qt::PreciseTimer, this, [=]() { // connect delay func
+            qDebug() << "time out, current time: " << QTime::currentTime().msecsSinceStartOfDay() << endl;
+            ui->plainTextEditRecv->appendPlainText(tr("time out, current time:  %1").arg(QTime::currentTime().msecsSinceStartOfDay()));
+                if (uAct_obj == ACT_OBJECT_PLAYER)
+                {
+                    qDebug() << "in music emit" << endl;
+                    emit evoke_music(uAct_name, uAct_val);
+                }
+                else if (uAct_obj == ACT_OBJECT_HOMEPAGE)
+                {
+                    qDebug() << "in home emit" << endl;
+                    emit evoker_homePage(uAct_name, uAct_val);
+                }
+                m_timerDelay.stop();
+            });
             break;
         }
         case TYPE_FILE:
         {
             qDebug() << "ins: " << buf << endl;
-  qDebug() << tr("%1").arg(4) << endl;
             //初始化
             qint64 nRet = codecodeSys::decode_file(buf, m_mdiFile.fileName, m_mdiFile.fileSize, m_mdiFile.channelNumber, qstrMsg_error);
             if (nRet != 0) // error handle
@@ -154,7 +161,21 @@ void tcpclient::ReadData() {
             qDebug() << "file name = " << m_mdiFile.fileName << endl;
             qDebug() << "file size = " << m_mdiFile.fileSize << endl;
             //存储文件
-            QString qstrFilePath = PATH_ANDROID_APP_MUSIC + m_mdiFile.fileName;
+            QString qstrFileFolder = folderName(m_mdiFile.fileName);
+            QDir dir(PATH_ANDROID_APP_MUSIC);
+            qDebug() << "music foler: " << dir << endl;
+            if (!dir.exists(qstrFileFolder))
+            {
+                bool ok = dir.mkdir(qstrFileFolder);
+                if (ok == false)
+                {
+                    QMessageBox::critical(this, __FUNCTION__ ,tr("mkdir error"));
+                    qDebug() << tr("mkdir music folder error") << endl;
+                    SendData("mkdir music folder error");
+                    return;
+                }
+            }
+            QString qstrFilePath = PATH_ANDROID_APP_MUSIC + qstrFileFolder + m_mdiFile.fileName;
             ui->plainTextEditRecv->appendPlainText(
                 tr("save path = %1").arg(qstrFilePath));
             m_mdiFile.file.setFileName(qstrFilePath);
@@ -170,14 +191,14 @@ void tcpclient::ReadData() {
               return; //如果打开文件失败，中断函数
             }
             //显示接收文件信息
-            QString str = QString(tr("接收文件： [%1 : %2 kb]"))
+            QString str = QString(tr("接收文件： [%1 : %2 kB]"))
                               .arg(m_mdiFile.fileName)
                               .arg(static_cast<double>(m_mdiFile.fileSize) / 1024);
             //QMessageBox::information(this, tr("file info"), str); // this funking stuff would block the main thread
             ui->plainTextEditRecv->appendPlainText(str);
             //设置进度条
             ui->progressBar->setMinimum(0);                         //最小值
-            ui->progressBar->setMaximum(m_mdiFile.fileSize / 1024); //最大值
+            ui->progressBar->setMaximum(static_cast<qint32>(m_mdiFile.fileSize / 1024)); //最大值
             ui->progressBar->setValue(0);                           //当前值
   qDebug() << tr("%1").arg(4.1) << endl;
   qDebug() << "m_nIsINS: " << m_nIsINS << endl;
@@ -230,7 +251,7 @@ void tcpclient::RecvFile()
                                              tr("%1\n").arg(nLen));
     }
     //更新进度条
-    ui->progressBar->setValue(m_mdiFile.recvSize / 1024);
+    ui->progressBar->setValue(static_cast<int>(m_mdiFile.recvSize / 1024));
     ui->plainTextEditRecv->appendPlainText(
         tr("recv size = %1\n").arg(m_mdiFile.recvSize));
 
@@ -258,6 +279,13 @@ void tcpclient::Reset_fileRecvStatus()
     m_mdiFile.reset_status();
 }
 
+QString tcpclient::folderName(QString fileName)
+{
+    QString qstrRet = fileName.mid(0, fileName.lastIndexOf('_'));
+    qDebug() << "folder name = " <<  qstrRet << endl;
+    return qstrRet + '/';
+}
+
 qint64 tcpclient::get_INS_length()
 {
     QByteArray prefix = m_tcpClient->read(6);
@@ -268,8 +296,9 @@ qint64 tcpclient::get_INS_length()
     if (prefix.back() != '#')
     {
         ui->plainTextEditRecv->appendPlainText("INS length errro");
-        ui->plainTextEditRecv->appendPlainText(tr("prefix: %1").arg(prefix.constData()));
-        QMessageBox::critical(this, tr("INS error"), tr("get INS length error"));
+        QString qstrData = prefix.constData();
+        ui->plainTextEditRecv->appendPlainText(tr("prefix: %1").arg(qstrData.toLocal8Bit().toHex(' ')));
+//        QMessageBox::critical(this, tr("INS error"), tr("get INS length error"));
         return -1;
     }
     return prefix.mid(0, 5).toInt();

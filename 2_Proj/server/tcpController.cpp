@@ -31,15 +31,9 @@ tcpController::tcpController(QMainWindow *parent)
   /* connect */
   connect(m_tcpServer, &QTcpServer::newConnection, this,
           &tcpController::NewConnectionSlot);
-  connect(&m_outFile.timer, &QTimer::timeout, [=]() {
-    //test
-    qDebug() << tr("time out") << endl;
-    //关闭定时器
-    m_outFile.timer.stop();
-
-    //发送文件
-    sendFile();
-  });
+  connect(m_currentClient, SIGNAL(readyRead()), this, SLOT(ReadData()));
+  connect(m_currentClient, SIGNAL(disconnected()), this,
+          SLOT(disConnectedSlot()));
 }
 
 tcpController::~tcpController()
@@ -55,23 +49,22 @@ void tcpController::sendFile() {
   qDebug() << tr("send file begin") << endl;
   qint64 len = 0;
   do {
-    //每次发送数据的大小 up to 4Kb
+    //每次发送数据的大小 up to 4KB
     char buf[4 * 1024] = {0};
     len = 0;
-
+    qint64 totalSend = 0;
     //往文件中读数据
     len = m_outFile.file.read(buf, sizeof(buf));
-    qDebug() << tr("read data len = ") << len << endl;
+//    qDebug() << tr("read data len = ") << len << endl;
     //发送数据，读多少 ，发多少 * number of client
-    qint64 totalSend = 0;
     for (auto client : m_ListTcpClient) {
       totalSend += client->write(buf, len);
     }
-    qDebug() << tr("total send data len = ") << totalSend << endl;
+//    qDebug() << tr("total send data len = ") << totalSend << endl;
     //发送的数据需要积累
     m_outFile.sendSize += totalSend;
   } while (len > 0);
-
+    qDebug() << tr("total send data len = ") << m_outFile.sendSize << endl;
   //是否发送文件完毕
   if (m_outFile.sendSize == m_outFile.fileSize * m_ListTcpClient.size()) {
     ui->plainTextEditSend->appendPlainText("文件all发送完毕");
@@ -157,6 +150,14 @@ void tcpController::ReadData() {
 qint64 tcpController::sendData2single(QTcpSocket *client, const QByteArray &data)
 {
     qint64 nWriteSize = client->write(data);
+    if (nWriteSize == data.length())
+    {
+        qDebug() << "send one INS success" << endl;
+    }
+    else
+    {
+        qDebug() << "send one INS fail" << endl;
+    }
     return nWriteSize;
 }
 
@@ -175,8 +176,11 @@ qint64 tcpController::sendData2all(const QByteArray &data)
     }
     if (data.size() * nSize != uTotalWriteSize)
     {
-        qDebug() << "ACT INS send fail" << endl;
-        QMessageBox::critical(this, tr("ACT INS"), tr("send fail!"));
+        qDebug() << "INS send fail" << endl;
+    }
+    else
+    {
+        qDebug() << "INS send success" << endl;
     }
     return uTotalWriteSize;
 //    QtConcurrent::run(this,&tcpController::test); // why error?
@@ -195,15 +199,12 @@ void tcpController::NewConnectionSlot() {
           .arg(m_currentClient->peerAddress().toString().split("::ffff:")[1])
           .arg(m_currentClient->peerPort()));
 
+  codecodeSys::setClientNumbers(m_ListTcpClient.length()); // update client number
+
   /* enable only if connexion is established*/
   ui->pushButtonSend->setEnabled(true);
   ui->pushButton_chooseFile->setEnabled(true);
   ui->pushButton_sendFile->setEnabled(true);
-
-  /* connect */
-  connect(m_currentClient, SIGNAL(readyRead()), this, SLOT(ReadData()));
-  connect(m_currentClient, SIGNAL(disconnected()), this,
-          SLOT(disConnectedSlot()));
 }
 
 void tcpController::disConnectedSlot() {
@@ -224,6 +225,8 @@ void tcpController::disConnectedSlot() {
   if (m_ListTcpClient.empty()) {
     ui->pushButtonSend->setEnabled(false);
   }
+
+  codecodeSys::setClientNumbers(m_ListTcpClient.length()); // update
 }
 
 void tcpController::on_pushButtonDisconnect_clicked()
@@ -350,20 +353,14 @@ void tcpController::on_pushButton_sendFile_clicked() {
         codecodeSys::INS_generator(INS_FILE.arg(m_outFile.fileName).arg(m_outFile.fileSize).arg(m_outFile.channelNumber));
       qDebug() << "INS : " << ins << endl;
     //轮流发送file instruction
-    qint64 len = 0;
-    len = sendData2all(ins.toLatin1());
+    qint64 len = sendData2all(ins.toLatin1());
     if (len > 0) // send successfully
     {
-      //发送真正的文件信息
-      //防止指令与文件数据混杂
-      //需要通过定时器延时 20ms
-      // 其实这里已经不用了，因为指令有了长度信息。
-      m_outFile.timer.start(20);
-      qDebug() << "ins send success" <<endl;
+      sendFile();
     }
     else
     {
-      qDebug() << "ins send fail";
+        QMessageBox::critical(this, __FUNCTION__ ,("send fail!"));
     }
 }
 
@@ -414,5 +411,13 @@ void tcpController::on_pushButton_PlayList_clicked()
 void tcpController::on_ListWidget_musicName_doubleClicked(const QModelIndex &index)
 {
 
+}
+
+
+void tcpController::on_pushButton_rePlay_clicked()
+{
+     QString ins;
+     ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_REPLAY));
+     sendData2all(ins.toLatin1());
 }
 

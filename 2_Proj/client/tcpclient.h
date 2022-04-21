@@ -39,14 +39,17 @@ private:
 public:
     void create_homeDir(); // save media file
     void Reset_fileRecvStatus(); // reset kinds of variables of mediaFile
+    QString folderName(QString fileName); // get original name(folder name) of music file
 
 
     /* INS process */
+private:
+    QTimer m_timerDelay;
 public:
     qint64 get_INS_length(); // return the length of a INS
 signals:
-    void evoke_music(QString ins);
-    void evoker_homePage(QString ins);
+    void evoke_music(qint64 uAct_name, qint64 uAct_val);
+    void evoker_homePage(qint64 uAct_name, qint64 uAct_val);
 
     /* tcp-server functions */
 public slots:

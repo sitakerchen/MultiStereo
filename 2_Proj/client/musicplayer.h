@@ -9,8 +9,6 @@
 #include <QDirIterator>
 #include <QFileInfo>
 #include <QFileSystemModel>
-#include <QJsonArray>
-#include <QJsonObject>
 #include <QList>
 #include <QMainWindow>
 #include <QMediaPlayer>
@@ -20,7 +18,6 @@
 #include <QString>
 #include <QThread>
 #include <QThreadPool>
-#include <QtConcurrent>
 #include <QtDebug>
 
 namespace Ui {
@@ -37,6 +34,7 @@ public:
   // action control
   bool action_playBack(bool act); // act == true: play, act == false: pause
   bool action_Volume(qint64 percentage); // perc = [0, 100]
+  bool action_rePlay();
 
   // tool function
   void tool_scanLocalMusicFile();
@@ -53,7 +51,7 @@ signals:
 
 public slots:
   // instruction
-  void ins_process(QString ins); // prase and execute instructions
+  void ins_process(qint64 uAct_name, qint64 uAct_val); // prase and execute instructions
 
   // page button
   void ShowMyself(); // show page

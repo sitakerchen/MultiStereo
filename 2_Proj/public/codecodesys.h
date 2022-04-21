@@ -15,9 +15,15 @@ public:
 
 private:
     static qint64 m_delayMs;
+    static qint64 m_timePerIns; // 发送完一条指令要多久
+    static qint64 m_clientNumber;
+
+public:
+    static void setClientNumbers(qint64 num);
 
 public slots:
     static QString code(QString type, QString name_actObj, QString size_actName, QString num_actVal);
+    static QString code_act(qint64 uAct_obj, qint64 uAct_name, qint64 uAct_val = 0);
 
     static qint64 decode_type(QString const &ins, QString &msg_error); // type  of instruction decode
 
