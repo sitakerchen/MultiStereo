@@ -53,6 +53,7 @@ const qint64 ACT_NAME_REPLAY = 1;
 const qint64 ACT_NAME_ASSIGN_ID = 2;
 
 const qint64 ACT_NAME_ASSIGN_CHANNEL = 10;
+const qint64 ACT_NAME_SET_SOURCE = 11;
 
 /* instructions */
 

@@ -6,6 +6,7 @@
 #include <QAudioOutput>
 #include <QDebug>
 #include <QDir>
+#include <QMap>
 #include <QDirIterator>
 #include <QFileInfo>
 #include <QFileSystemModel>
@@ -32,9 +33,16 @@ public:
   ~MusicPlayer() override;
 
   // action control
+private:
+    qint64 m_channelIndex;
+    QMap<qint64, QString> m_toChannelName;
+
+public:
   bool action_playBack(bool act); // act == true: play, act == false: pause
   bool action_Volume(qint64 percentage); // perc = [0, 100]
   bool action_rePlay();
+  bool action_setSource(QString folderName);
+  bool action_setChannel(qint64 channelIndex);
 
   // tool function
   void tool_scanLocalMusicFile();
@@ -51,7 +59,7 @@ signals:
 
 public slots:
   // instruction
-  void ins_process(qint64 uAct_name, qint64 uAct_val); // prase and execute instructions
+  void ins_process(qint64 uAct_name, QString uAct_val); // prase and execute instructions
 
   // page button
   void ShowMyself(); // show page

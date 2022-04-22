@@ -14,17 +14,16 @@ homePage::~homePage()
     delete ui;
 }
 
-void homePage::ins_process(qint64 uAct_name, qint64 uAct_val)
+void homePage::ins_process(qint64 uAct_name, QString uAct_val)
 {
     if (uAct_name == ACT_NAME_ASSIGN_ID)
     {
-        setId(uAct_val);
+        setId(uAct_val.toInt());
     }
 }
 
 void homePage::setId(qint64 id)
 {
-    ui->label_id->setScaledContents(true);
     ui->label_id->setText(QString::number(id));
 }
 

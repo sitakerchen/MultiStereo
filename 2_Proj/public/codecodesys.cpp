@@ -68,7 +68,14 @@ QString codecodeSys::code(QString type, QString name_actObj, QString size_actNam
 
 QString codecodeSys::code_act(qint64 uAct_obj, qint64 uAct_name,qint64 uAct_val )
 {
-    QString qstrIns = INS_.arg(TYPE_ACT).arg(uAct_obj).arg(uAct_name).arg( uAct_val);
+    QString qstrIns = INS_.arg(TYPE_ACT).arg(uAct_obj).arg(uAct_name).arg(uAct_val);
+    qDebug() << "generate act INS: " << qstrIns << endl;
+    return qstrIns;
+}
+
+QString codecodeSys::code_act(qint64 uAct_obj, qint64 uAct_name, QString uAct_val)
+{
+    QString qstrIns = INS_.arg(TYPE_ACT).arg(uAct_obj).arg(uAct_name).arg(uAct_val);
     qDebug() << "generate act INS: " << qstrIns << endl;
     return qstrIns;
 }
@@ -144,3 +151,24 @@ qint64 codecodeSys::decode_act(QString const &ins, qint64 &uAct_obj, qint64 &uAc
     return -1;
 }
 
+/*
+ *  in:
+ *  out:
+ *  return:
+ *          a number(qint32) which denote the type of instruction
+ *          if error occured, return -1
+ */
+qint64 codecodeSys::decode_act(const QString &ins, qint64 &uAct_obj, qint64 &uAct_name, QString &uAct_val, QString &msg_error)
+{
+     bool ok1, ok2, ok3 = true;
+    uAct_obj =  ins.section("##", 1, 1).toInt(&ok1);
+    uAct_name = ins.section("##", 2, 2).toInt(&ok2);
+    uAct_val =  ins.section("##", 3, 3);
+    if (ok1 and ok2 and ok3)
+    {
+        return 0;
+    }
+    msg_error = "invalid action obj or name or value";
+    qDebug() << "INS: " << ins << endl;
+    return -1;
+}

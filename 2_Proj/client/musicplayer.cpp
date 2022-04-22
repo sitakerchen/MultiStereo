@@ -8,20 +8,29 @@ MusicPlayer::MusicPlayer(QWidget *parent)
   ui->setupUi(this);
   // init player
   m_player.setAudioOutput(&m_audioOutput);
-//  connect(&m_player, SIGNAL(positionChanged(qint64)), this, ) // wait for ui
-  m_musicList.append(PATH_ANDROID_APP_MUSIC+ "Left_RightStereoSoundTest-320k.mp3");
-  qDebug() << "test file path :" << m_musicList.at(0) << endl;
-  QDir dir(PATH_ANDROID_APP_MUSIC);
-  if (dir.exists(m_musicList.at(0)))
-    m_player.setSource(QUrl::fromLocalFile(m_musicList.at(0)));
-  else
-    QMessageBox::warning(this, tr("error"), tr("file not exist"));
+
+  /* init variables */
+  m_channelIndex = 1; // default
+  m_toChannelName[FILE_CHANNEL_2_LEFT] = FILE_CHANNEL_NAME_2_LEFT;
+  m_toChannelName[FILE_CHANNEL_2_RIGHT] = FILE_CHANNEL_NAME_2_RIGHT;
+  m_toChannelName[FILE_CHANNEL_5_LEFT_FORE] = FILE_CHANNEL_NAME_5_LEFT_FORE;
+  m_toChannelName[FILE_CHANNEL_5_LEFT] =  FILE_CHANNEL_NAME_5_LEFT;
+  m_toChannelName[FILE_CHANNEL_5_LEFT_BACK] = FILE_CHANNEL_NAME_5_LEFT_BACK;
+  m_toChannelName[FILE_CHANNEL_5_RIGHT_FORE] = FILE_CHANNEL_NAME_5_RIGHT_FORE;
+  m_toChannelName[FILE_CHANNEL_5_RIGHT] = FILE_CHANNEL_NAME_5_RIGHT;
+  m_toChannelName[FILE_CHANNEL_5_RIGHT_BACK] = FILE_CHANNEL_NAME_5_RIGHT_BACK;
+
+  /* connect */
+  connect(&m_player, &QMediaPlayer::errorOccurred, [](QMediaPlayer::Error error, const QString &errorStr){
+      qDebug() << "player error! " << error << " " << errorStr << endl;
+  });
 }
 
 MusicPlayer::~MusicPlayer() { delete ui; }
 
 bool MusicPlayer::action_playBack(bool act)
 {
+    qDebug() << "has audio? :" << m_player.hasAudio() << endl;
     if (act) m_player.play();
     else m_player.pause();
     return true;
@@ -37,6 +46,52 @@ bool MusicPlayer::action_rePlay()
 {
     m_player.stop();
     m_player.play();
+    return true;
+}
+
+bool MusicPlayer::action_setSource(QString folderName)
+{
+    QDir dir(PATH_ANDROID_APP_MUSIC);
+    if (!dir.exists(folderName))
+    {
+        qDebug() << tr("error, music file folder [%1] not exist").arg(folderName) << endl;
+        return false;
+    }
+    dir.cd(folderName);
+    QString qstrSourceName = folderName + "_" + m_toChannelName[m_channelIndex] + ".wav";
+    qDebug() << "Source Name = " << qstrSourceName << endl;
+
+    if (dir.exists(qstrSourceName))
+    {
+        qDebug() << "Source Name = " << qstrSourceName << endl;
+        qDebug() << "Source path = " << dir.absoluteFilePath(qstrSourceName);
+        m_player.setSource(QUrl::fromLocalFile(dir.absoluteFilePath(qstrSourceName)));
+        return true;
+    }
+    else
+    {
+        QStringList filters = {"*.mp3", "*.wav"};
+        QDirIterator dir_iterator(dir.absolutePath(), filters, QDir::NoDotAndDotDot);
+        while (dir_iterator.hasNext())
+        {
+            dir_iterator.next();
+            m_player.setSource(QUrl::fromLocalFile(dir_iterator.filePath()));
+            qDebug() << tr("error, music file [%1] not exist, playing the first music file by default").arg(qstrSourceName) << endl;
+            return false;
+        }
+        QMessageBox::critical(this, tr(__FUNCTION__), tr("empty folder!"));
+        return false;
+    }
+}
+
+bool MusicPlayer::action_setChannel(qint64 channelIndex)
+{
+    if (channelIndex < 1 or channelIndex > 8)
+    {
+        qDebug() << "error, invalid channel index " << endl;
+        return false;
+    }
+    m_channelIndex = channelIndex;
     return true;
 }
 
@@ -75,15 +130,23 @@ void MusicPlayer::on_btnPlay_clicked()
     }
 }
 
-void MusicPlayer::ins_process(qint64 uAct_name, qint64 uAct_val)
+void MusicPlayer::ins_process(qint64 uAct_name, QString uAct_val)
 {
     qDebug() << "in music" << endl;
+    qDebug() << "uAct_name = " << uAct_name <<  "uAct_val = " << uAct_val << endl;
+    qDebug() << "player's source = " << m_player.source() << endl;
     switch (uAct_name) {
     case ACT_NAME_PLAYBACK:
-        action_playBack(uAct_val);
+        action_playBack(uAct_val.toInt());
         break;
     case ACT_NAME_REPLAY:
         action_rePlay();
+        break;
+    case ACT_NAME_SET_SOURCE:
+        action_setSource(uAct_val);
+        break;
+    case ACT_NAME_ASSIGN_CHANNEL:
+        action_setChannel(uAct_val.toInt());
         break;
     default:
         break;

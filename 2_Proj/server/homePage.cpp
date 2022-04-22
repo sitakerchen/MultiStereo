@@ -97,8 +97,6 @@ homePage::homePage(QWidget *parent)
 
     /* remind user */
     QMessageBox::warning(this, tr("注意"), tr("请所有音频文件中不要出现#以及_字符，否则会导致系统异常出现未定义行为，一定要注意，如果音频文件中出现了#字符或_字符，请自行改名或者系统回强制替换未其他字符"));
-
-
 }
 
 homePage::~homePage()

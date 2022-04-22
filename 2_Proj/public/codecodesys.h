@@ -23,7 +23,8 @@ public:
 
 public slots:
     static QString code(QString type, QString name_actObj, QString size_actName, QString num_actVal);
-    static QString code_act(qint64 uAct_obj, qint64 uAct_name, qint64 uAct_val = 0);
+    static QString code_act(qint64 uAct_obj, qint64 uAct_name, qint64 uAct_val);
+    static QString code_act(qint64 uAct_obj, qint64 uAct_name, QString uAct_val);
 
     static qint64 decode_type(QString const &ins, QString &msg_error); // type  of instruction decode
 
@@ -35,6 +36,9 @@ public slots:
 
     static qint64 decode_act(QString const &ins, qint64 &uAct_obj,
                              qint64 &uAct_name, qint64 &uAct_val,
+                             QString &msg_error);
+    static qint64 decode_act(QString const &ins, qint64 &uAct_obj,
+                             qint64 &uAct_name, QString &uAct_val,
                              QString &msg_error);
 
     static QString INS_generator(QString const &qstrIns);

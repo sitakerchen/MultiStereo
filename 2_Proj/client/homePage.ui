@@ -23,13 +23,13 @@
       <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
-         <x>240</x>
-         <y>30</y>
-         <width>121</width>
-         <height>201</height>
+         <x>220</x>
+         <y>10</y>
+         <width>140</width>
+         <height>191</height>
         </rect>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1">
+       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0">
         <item>
          <widget class="QLabel" name="label_0">
           <property name="text">
@@ -39,8 +39,11 @@
         </item>
         <item>
          <widget class="QLabel" name="label_id">
+          <property name="styleSheet">
+           <string notr="true">font: 700 72pt &quot;Segoe UI&quot;;</string>
+          </property>
           <property name="text">
-           <string>TextLabel</string>
+           <string/>
           </property>
          </widget>
         </item>

@@ -81,7 +81,7 @@ void tcpclient::ReadData() {
   if (true == m_nIsINS) // if in read-INS status
   {
     //取指令
-  qDebug() << tr("%1").arg(2) << endl;
+    qDebug() << tr("%1").arg(2) << endl;
     qint64 uLen = get_INS_length();
     if (uLen == -2) return; // read noting, do nothing
     if (uLen <= 0)
@@ -100,7 +100,8 @@ void tcpclient::ReadData() {
     qDebug() << "recv ins: " << buf << endl;
     QString qstrMsg_error = "";
     qint64 nType = codecodeSys::decode_type(buf, qstrMsg_error);
-    qint64 uAct_name, uAct_obj, uAct_val;
+    qint64 uAct_name, uAct_obj;
+    QString uAct_val; // for the sake of
 
     switch (nType)
     {
@@ -125,6 +126,7 @@ void tcpclient::ReadData() {
             codecodeSys::decode_act(buf, uAct_obj, uAct_name, uAct_val, qstrMsg_error);
 
             qint64 uDelayTime = dueTime - QTime::currentTime().msecsSinceStartOfDay();
+            if (uDelayTime < 0) uDelayTime = 0;
 //            ui->plainTextEditRecv->appendPlainText(tr("delay time = %1").arg(uDelayTime));
             /* start delay */
             QTimer::singleShot(uDelayTime, Qt::PreciseTimer, this, [=]() { // connect delay func

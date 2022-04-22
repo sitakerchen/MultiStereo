@@ -425,7 +425,7 @@ void tcpController::on_pushButton_PlayList_clicked()
             dir_iterator.next();
             m_musicInfo.append(dir_iterator.fileInfo());
             qDebug()<<"name:"<<dir_iterator.fileInfo().fileName()<<"path:"<<dir_iterator.fileInfo().filePath();
-            ui->ListWidget_musicName->addItem(dir_iterator.fileName());
+            ui->ListWidget_musicName->addItem(dir_iterator.fileName().section('.', 0, 0));
         }
     }
     for (auto music: m_musicInfo)
@@ -436,6 +436,11 @@ void tcpController::on_pushButton_PlayList_clicked()
 
 void tcpController::on_ListWidget_musicName_doubleClicked(const QModelIndex &index)
 {
+    QString fileName = index.data().toString();
+    qDebug() << "fileName: " << fileName << endl;
+    QString ins;
+    ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_SET_SOURCE, fileName));
+    sendData2all(ins.toLatin1());
 
 }
 
@@ -450,7 +455,7 @@ void tcpController::setChannel(qint64 id, qint64 channelNumber)
 void tcpController::on_pushButton_rePlay_clicked()
 {
      QString ins;
-     ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_REPLAY));
+     ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_REPLAY, 0));
      sendData2all(ins.toLatin1());
 }
 
