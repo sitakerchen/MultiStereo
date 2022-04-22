@@ -16,7 +16,10 @@ public:
     explicit identityController(QObject *parent = nullptr);
 
     /* identity control */
+public:
     static identityController& getInstance(); // return instance of identityController
+    qint64 whichId(QTcpSocket *client);
+    QTcpSocket *whichClient(qint64 id);
 
 private:
     static identityController *m_idController;

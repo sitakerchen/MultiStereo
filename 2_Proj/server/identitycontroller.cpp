@@ -26,6 +26,36 @@ identityController &identityController::getInstance()
     return *m_idController;
 }
 
+qint64 identityController::whichId(QTcpSocket *client)
+{
+    if (m_toId.find(client) == m_toId.end()) // can't find it
+    {
+        return -1;
+    }
+    else
+    {
+        return m_toId[client];
+    }
+}
+
+/*
+ * in:
+ *
+ * return:
+ *      if corresponding id exists, return id, otherwise, return nullptr
+ */
+QTcpSocket *identityController::whichClient(qint64 id)
+{
+    if (m_toSocket.find(id) == m_toSocket.end())
+    {
+        return nullptr;
+    }
+    else
+    {
+        return m_toSocket[id];
+    }
+}
+
 qint64 identityController::getIdFromPool()
 {
     if (idPool.size() == 0)

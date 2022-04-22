@@ -281,7 +281,12 @@ void tcpclient::Reset_fileRecvStatus()
 
 QString tcpclient::folderName(QString fileName)
 {
-    QString qstrRet = fileName.mid(0, fileName.lastIndexOf('_'));
+    qint64 nPos = fileName.lastIndexOf('_');
+    if (nPos == -1)
+    {
+        return fileName + '/';
+    }
+    QString qstrRet = fileName.mid(0, nPos);
     qDebug() << "folder name = " <<  qstrRet << endl;
     return qstrRet + '/';
 }

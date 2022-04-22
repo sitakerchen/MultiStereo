@@ -42,6 +42,9 @@ public slots:
     void NewConnectionSlot(); // 处理新的连接请求
     void disConnectedSlot(); // 处理客户端的断开连接请求
     void on_pushButtonDisconnect_clicked(); // 开启与关闭服务器的监听与连接
+signals:
+    void evoke_homePage_addItem(qint64 id);
+    void evoke_homePage_RemoveItem(qint64 id);
 
     /* send and recv data*/
 public slots:
@@ -60,6 +63,7 @@ public slots:
     void on_btnPlay_clicked();
     void on_pushButton_rePlay_clicked();
     void on_ListWidget_musicName_doubleClicked(const QModelIndex &index);
+    void setChannel(qint64 id, qint64 channelNumber);
 
     /* media file manage */
 private:

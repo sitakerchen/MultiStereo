@@ -31,9 +31,7 @@ tcpController::tcpController(QMainWindow *parent)
   /* connect */
   connect(m_tcpServer, &QTcpServer::newConnection, this,
           &tcpController::NewConnectionSlot);
-  connect(m_currentClient, SIGNAL(readyRead()), this, SLOT(ReadData()));
-  connect(m_currentClient, SIGNAL(disconnected()), this,
-          SLOT(disConnectedSlot()));
+
 }
 
 tcpController::~tcpController()
@@ -191,6 +189,7 @@ void tcpController::NewConnectionSlot() {
   /* add to client list and allocate an id */
   m_ListTcpClient.append(m_currentClient); // add to list
   qint64 uId = identityController::getInstance().id_allocateId(m_currentClient); // allocate id
+  emit evoke_homePage_addItem(uId);
   QString ins = codecodeSys::INS_generator(INS_ASSIGN_ID.arg(uId));
   sendData2single(m_currentClient, ins.toLatin1()); // send id to client
 
@@ -205,6 +204,11 @@ void tcpController::NewConnectionSlot() {
   ui->pushButtonSend->setEnabled(true);
   ui->pushButton_chooseFile->setEnabled(true);
   ui->pushButton_sendFile->setEnabled(true);
+
+  /* attention! this connect process must be done after there indeed is a client(QtcpSocket) */
+  connect(m_currentClient, &QIODevice::readyRead, this, &tcpController::ReadData);
+  connect(m_currentClient, &QAbstractSocket::disconnected, this,
+          &tcpController::disConnectedSlot);
 }
 
 void tcpController::disConnectedSlot() {
@@ -217,6 +221,7 @@ void tcpController::disConnectedSlot() {
               .arg(m_ListTcpClient[i]->peerAddress().toString().split(
                   "::ffff:")[1])
               .arg(m_ListTcpClient[i]->peerPort())));
+      emit evoke_homePage_RemoveItem(identityController::getInstance().whichId(m_ListTcpClient[i]));
       identityController::getInstance().id_recycleId(m_ListTcpClient[i]);
       m_ListTcpClient[i]->destroyed();
       m_ListTcpClient.removeAt(i);
@@ -393,6 +398,27 @@ void tcpController::on_pushButton_PlayList_clicked()
 
     for (auto path: m_musicDir)
     {
+        /* check illegal chara */
+        QDirIterator dir_iterator_check(path.path(), filters, QDir::Files | QDir::NoSymLinks,QDirIterator::Subdirectories);
+        while (dir_iterator_check.hasNext())
+        {
+            dir_iterator_check.next();
+            /* 如果文件名中出现了#或者_字符强制改为字符~ */
+            QDir dir(dir_iterator_check.path());
+            QString qstrFileName = dir_iterator_check.fileName();
+            if (qstrFileName.contains('#') or qstrFileName.contains('_'))
+            {
+                qstrFileName.replace('#', '~');
+                qstrFileName.replace('_', '~');
+                bool ok = dir.rename(dir_iterator_check.filePath(), dir_iterator_check.path() + '/' + qstrFileName);
+                if (!ok)
+                {
+                    QMessageBox::critical(this, tr(__FUNCTION__), tr("contain illegal characters, rename fail, please try to manual rename"));
+                    return;
+                }
+            }
+        }
+        /* read music info */
         QDirIterator dir_iterator(path.path(), filters, QDir::Files | QDir::NoSymLinks,QDirIterator::Subdirectories);
         while (dir_iterator.hasNext())
         {
@@ -411,6 +437,13 @@ void tcpController::on_pushButton_PlayList_clicked()
 void tcpController::on_ListWidget_musicName_doubleClicked(const QModelIndex &index)
 {
 
+}
+
+void tcpController::setChannel(qint64 id, qint64 channelNumber)
+{
+    QString ins;
+    ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_ASSIGN_ID, channelNumber));
+    sendData2single(identityController::getInstance().whichClient(id), ins.toLatin1());
 }
 
 
