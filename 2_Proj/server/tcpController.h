@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 #include <QNetworkInterface>
 #include <QThread>
 #include <QVector>
@@ -59,17 +61,35 @@ public slots:
     void on_pushButton_sendFile_clicked();
 
     /* remote synchronous music player controller */
+private:
+    QMediaPlayer m_player;
+    QAudioOutput m_audioOutput;
+    QFileInfo m_curSelectSong;
+
 public slots:
-    void on_btnPlay_clicked();
-    void on_pushButton_rePlay_clicked();
-    void on_ListWidget_musicName_doubleClicked(const QModelIndex &index);
-    void setChannel(qint64 id, qint64 channelNumber);
+    void delay_ms(qint64 ms);
+    void updatePosition(qint64 pos);  // no need
+    void updateDuration(qint64 duration); // no need to send which can do by itself
+    void updatePlayBtnIcon(); // no need
+    QString forMatTime(qint64 timeMilliSeconds); // no need
+
+    void on_btnPlay_clicked(); //
+    void on_btnPre_clicked(); // no need, = setSource + replay
+    void on_btnNext_clicked(); // no need, = setSource + replay
+    void on_volumeSlider_valueChanged(int value); // !! value = [0, 1] double
+    void on_btnVolume_clicked(); // no need
+    void on_pushButton_rePlay_clicked(); // replay a song
+    void on_ListWidget_musicName_doubleClicked(const QModelIndex &index); // no need, do it in setPlayerSource
+    void setChannel(qint64 id, qint64 channelNumber); //
+    void setPosition(int pos); //
+    bool setPlayerSource(); //
+    bool setPlayerSource(QString abPath);  // no need
 
     /* media file manage */
 private:
     mediaFile m_outFile;
     QVector<QDir> m_musicDir; // dir that contains music
-    QList<QFileInfo> m_musicInfo; // file info list of all accessible music
+    QList<QFileInfo> m_musicInfoList; // file info list of all accessible music
     QString m_MusicLibBasePath = "D:/Dev/CourseDesign/MultiStereo/3_Resource/MusicLibary/"; // base bath of music library
 
 public slots:
@@ -82,6 +102,8 @@ signals:
     /* UI */
 public slots:
     void on_pushButtonClearWindow_clicked(); // 清除接收窗口内容
+
+
 };
 
 #endif // TCPCONTROLLER_H

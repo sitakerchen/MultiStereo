@@ -67,5 +67,8 @@
         <file>image/image/24gl-play.png</file>
         <file>image/image/24gl-previous.png</file>
         <file>image/image/24gl-repeat.png</file>
+        <file>image/image/24gl-pause.png</file>
+        <file>image/image/24gl-volumeHigh.png</file>
+        <file>image/image/24gl-refresh.png</file>
     </qresource>
 </RCC>

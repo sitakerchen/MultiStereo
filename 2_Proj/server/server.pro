@@ -1,4 +1,4 @@
-QT       += core gui network concurrent core5compat
+QT       += core gui network concurrent core5compat multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -18,6 +18,7 @@ INCLUDEPATH += ./
 
 SOURCES += \
     ../public/codecodesys.cpp \
+    ../public/delayCalculator.cpp \
     ../public/mediafile.cpp \
     homePage.cpp \
     identitycontroller.cpp \
@@ -28,6 +29,7 @@ SOURCES += \
 
 HEADERS += \
     ../public/codecodesys.h \
+    ../public/delayCalculator.h \
     ../public/macro.h \
     ../public/mediafile.h \
     homePage.h \

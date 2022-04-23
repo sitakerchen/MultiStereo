@@ -46,23 +46,17 @@ void rawMediaProcess::on_pushButtonSplit2mono_clicked()
     }
     PC::getInstance().writeCommand(qstrCmd);
     dir.mkdir(m_urlAudioFile.fileName().section('.', 0, 0));
-    QString FilePathList[2] =
-    {
-        (m_workingPath + "%1" + m_urlAudioFile.fileName().section('.', 0, 0) + "_" + FILE_CHANNEL_NAME_2_LEFT + ".wav"),
-        (m_workingPath + "%1" + m_urlAudioFile.fileName().section('.', 0, 0) + "_" + FILE_CHANNEL_NAME_2_RIGHT + ".wav")
-    };
     ProcessControl::getInstance().wait_forFinished();
-    for (auto path: FilePathList)
+    QString qstrOldFile = (m_workingPath + m_rawMediaFolder + m_urlAudioFile.fileName().section('.', 0, 0) + "_" + FILE_CHANNEL_NAME_2_LEFT + ".wav");
+    QString qstrNewFile = (m_workingPath + m_mediaFolder + m_urlAudioFile.fileName().section('.', 0, 0) + "/" + m_urlAudioFile.fileName().section('.', 0, 0) + "_" + FILE_CHANNEL_NAME_2_RIGHT + ".wav");
+    qDebug() << "old file path = " << qstrOldFile << endl;
+    qDebug() << "new file path = " << qstrNewFile << endl;
+    bool ok = dir.rename(qstrOldFile, qstrNewFile);
+    if (ok == false)
     {
-        QString qstrOldFile = path.arg(m_rawMediaFolder), qstrNewFile = path.arg(m_mediaFolder + m_urlAudioFile.fileName().section('.', 0, 0) + "/");
-        bool ok = dir.rename(qstrOldFile, qstrNewFile);
-        if (ok == false)
-        {
-            QMessageBox::critical(this, __FUNCTION__, tr("split fail!"));
-            return ;
-        }
+        QMessageBox::critical(this, __FUNCTION__, tr("split fail!"));
+        return ;
     }
-
 }
 
 bool rawMediaProcess::split_2(const QString &srcFilePath)
@@ -90,11 +84,14 @@ bool rawMediaProcess::split_2(const QString &srcFilePath)
         ProcessControl::getInstance().wait_forFinished();
         for (auto path: FilePathList)
         {
-            QString qstrOldFile = path.arg(m_rawMediaFolder), qstrNewFile = path.arg(m_mediaFolder + m_urlAudioFile.fileName().section('.', 0, 0) + "/");
+            QString qstrOldFile = QString(path).replace("%1", m_rawMediaFolder);
+            QString qstrNewFile = QString(path).replace("%1", m_mediaFolder + m_urlAudioFile.fileName().section('.', 0, 0) + "/");
+            qDebug() << "old file path = " << qstrOldFile << endl;
+            qDebug() << "new file path = " << qstrNewFile << endl;
             bool ok = dir.rename(qstrOldFile, qstrNewFile);
             if (ok == false)
             {
-                QMessageBox::critical(this, __FUNCTION__, tr("split fail!"));
+                QMessageBox::critical(this, __FUNCTION__, tr("split fail!\n oldFile:%1 \n newFile:%2").arg(qstrOldFile, qstrNewFile));
                 return false;
             }
         }

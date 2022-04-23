@@ -20,6 +20,9 @@ MusicPlayer::MusicPlayer(QWidget *parent)
   m_toChannelName[FILE_CHANNEL_5_RIGHT] = FILE_CHANNEL_NAME_5_RIGHT;
   m_toChannelName[FILE_CHANNEL_5_RIGHT_BACK] = FILE_CHANNEL_NAME_5_RIGHT_BACK;
 
+  /* init widget */
+  ui->listWidget_musicList->setWordWrap(true);
+
   /* connect */
   connect(&m_player, &QMediaPlayer::errorOccurred, [](QMediaPlayer::Error error, const QString &errorStr){
       qDebug() << "player error! " << error << " " << errorStr << endl;
@@ -135,6 +138,7 @@ void MusicPlayer::ins_process(qint64 uAct_name, QString uAct_val)
     qDebug() << "in music" << endl;
     qDebug() << "uAct_name = " << uAct_name <<  "uAct_val = " << uAct_val << endl;
     qDebug() << "player's source = " << m_player.source() << endl;
+//    ui->listWidget_musicList->addItem(m_player.source().toString());
     switch (uAct_name) {
     case ACT_NAME_PLAYBACK:
         action_playBack(uAct_val.toInt());

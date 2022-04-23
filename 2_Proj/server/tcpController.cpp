@@ -2,17 +2,24 @@
 #include "ui_tcpController.h"
 using Qt::endl;
 
+// temp
+qint64 delayTime = 1000; // ms
+
 tcpController::tcpController(QMainWindow *parent)
     : QMainWindow(parent), ui(new Ui::tcpController) {
   /* 初始化服务器 */
   ui->setupUi(this);
   m_tcpServer = new QTcpServer(this);
 
+  /* init player */
+  m_player.setAudioOutput(&m_audioOutput);
+
+
   /* initiate variables */
   m_bIsListening = false;
 
   /* 初始化配置 */
-  setWindowTitle(tr("Server"));
+  setWindowTitle(tr("controller"));
   ui->lineEditIP->setText(QNetworkInterface()
                               .allAddresses()
                               .at(1)
@@ -28,9 +35,18 @@ tcpController::tcpController(QMainWindow *parent)
   on_pushButtonDisconnect_clicked(); // default switch on listening
   m_musicDir.append(QDir("D:/Dev/CourseDesign/MultiStereo/3_Resource/MusicLibrary_raw/"));
 
-  /* connect */
+  /* init widget */
+  ui->volumeSlider->setVisible(false);
+  ui->volumeSlider->setRange(0, 100);
+
+  /* tcp connect */
   connect(m_tcpServer, &QTcpServer::newConnection, this,
           &tcpController::NewConnectionSlot);
+
+  /* player connect */
+  connect(ui->positionSlider, &QAbstractSlider::valueChanged, this, &tcpController::setPosition);
+  connect(&m_player, &QMediaPlayer::positionChanged, this, &tcpController::updatePosition);
+  connect(&m_player, &QMediaPlayer::durationChanged, this, &tcpController::updateDuration);
 
 }
 
@@ -369,21 +385,73 @@ void tcpController::on_pushButton_sendFile_clicked() {
     }
 }
 
+void tcpController::delay_ms(qint64 ms)
+{
+    QTime dieTime = QTime::currentTime().addMSecs(ms);
+         while( QTime::currentTime() < dieTime )
+             QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+}
+
+void tcpController::updatePosition(qint64 pos)
+{
+    ui->positionSlider->setValue(static_cast<int>(pos));
+    ui->Label_position->setText(forMatTime(pos));
+    ui->Label_position_2->setText(forMatTime(m_player.duration()));
+}
+
+void tcpController::updateDuration(qint64 duration)
+{
+    ui->positionSlider->setRange(0, static_cast<int>(duration));
+    ui->positionSlider->setEnabled(static_cast<int>(duration) > 0);
+    ui->positionSlider->setPageStep(static_cast<int>(duration));
+}
+
+void tcpController::updatePlayBtnIcon()
+{
+    if (m_player.playbackState() == QMediaPlayer::PausedState)
+    {
+        ui->btnPlay->setIcon(QIcon(":/image/image/image/24gl-play.png"));
+    }
+    else
+    {
+        ui->btnPlay->setIcon(QIcon(":/image/image/image/24gl-pause.png"));
+    }
+}
+
+QString tcpController::forMatTime(qint64 timeMilliSeconds)
+{
+    qint64 seconds = timeMilliSeconds / 1000;
+    const qint64 minutes = seconds / 60;
+    seconds -= minutes * 60;
+    return QStringLiteral("%1:%2")
+        .arg(minutes, 2, 10, QLatin1Char('0'))
+        .arg(seconds, 2, 10, QLatin1Char('0'));
+}
+
 void tcpController::on_btnPlay_clicked()
 {
+    if (m_musicInfoList.empty())
+    {
+        return;
+    }
     QString ins;
-    static bool player_status = false;
-    if (player_status == false)
+    if (m_player.playbackState() == QMediaPlayer::PausedState)
     {
         ins = codecodeSys::INS_generator(INS_PLAY);
         sendData2all(ins.toLatin1());
-        player_status = true;
+
+        delay_ms(delayTime);
+        m_player.play();
+        updatePlayBtnIcon();
     }
     else
     {
         ins = codecodeSys::INS_generator(INS_PAUSE);
         sendData2all(ins.toLatin1());
-        player_status = false;
+
+        delay_ms(delayTime);
+        m_player.pause();
+        updatePlayBtnIcon();
     }
 }
 
@@ -391,7 +459,7 @@ void tcpController::on_btnPlay_clicked()
 void tcpController::on_pushButton_PlayList_clicked()
 {
     QStringList filters;
-    m_musicInfo.clear();
+    m_musicInfoList.clear();
     filters << QString("*.mp3");
 
     ui->ListWidget_musicName->clear();
@@ -423,12 +491,13 @@ void tcpController::on_pushButton_PlayList_clicked()
         while (dir_iterator.hasNext())
         {
             dir_iterator.next();
-            m_musicInfo.append(dir_iterator.fileInfo());
+            m_musicInfoList.append(dir_iterator.fileInfo());
             qDebug()<<"name:"<<dir_iterator.fileInfo().fileName()<<"path:"<<dir_iterator.fileInfo().filePath();
             ui->ListWidget_musicName->addItem(dir_iterator.fileName().section('.', 0, 0));
         }
     }
-    for (auto music: m_musicInfo)
+    if (!m_musicInfoList.empty()) m_curSelectSong = m_musicInfoList.at(0); // select first one by default
+    for (auto music: m_musicInfoList)
     {
         emit evoke_split(music.absoluteFilePath());
     }
@@ -436,26 +505,127 @@ void tcpController::on_pushButton_PlayList_clicked()
 
 void tcpController::on_ListWidget_musicName_doubleClicked(const QModelIndex &index)
 {
+    m_curSelectSong = m_musicInfoList.at(index.row()); // set current song
+    m_player.setSource(QUrl::fromLocalFile(m_curSelectSong.absoluteFilePath()));
+
     QString fileName = index.data().toString();
     qDebug() << "fileName: " << fileName << endl;
-    QString ins;
-    ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_SET_SOURCE, fileName));
-    sendData2all(ins.toLatin1());
-
+        on_pushButton_rePlay_clicked(); // 双击设定曲目后播放
+    updatePlayBtnIcon();
 }
 
 void tcpController::setChannel(qint64 id, qint64 channelNumber)
 {
     QString ins;
-    ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_ASSIGN_ID, channelNumber));
+    ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_ASSIGN_CHANNEL, channelNumber));
     sendData2single(identityController::getInstance().whichClient(id), ins.toLatin1());
+}
+
+void tcpController::setPosition(int pos)
+{
+    if (qAbs(m_player.position() - pos) > 99)
+    {
+        QString ins;
+        ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_SET_POS, pos));
+        sendData2all(ins.toLatin1());
+
+        delay_ms(delayTime);
+        m_player.setPosition(pos);
+    }
+}
+
+bool tcpController::setPlayerSource()
+{
+    QString ins;
+    QString fileName = ui->ListWidget_musicName->currentIndex().data().toString();
+    ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_SET_SOURCE, fileName));
+    sendData2all(ins.toLatin1());
+
+    delay_ms(delayTime);
+    m_player.setSource(QUrl::fromLocalFile(m_curSelectSong.absoluteFilePath()));
+    return (m_player.source().toString() != "");
+}
+
+bool tcpController::setPlayerSource(QString abPath)
+{
+    m_player.setSource(QUrl::fromLocalFile(abPath));
+    return (m_player.source().toString() != "");
 }
 
 
 void tcpController::on_pushButton_rePlay_clicked()
 {
-     QString ins;
-     ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_REPLAY, 0));
-     sendData2all(ins.toLatin1());
+    if (m_musicInfoList.empty())
+    {
+        return;
+    }
+
+    /* remote */
+    QString ins;
+    ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_REPLAY, 0));
+    sendData2all(ins.toLatin1());
+
+    /* self */
+    delay_ms(delayTime);
+    m_player.stop();
+    m_player.play();
+    updatePlayBtnIcon();
+}
+
+
+void tcpController::on_btnPre_clicked()
+{
+    if (m_musicInfoList.empty())
+    {
+        return;
+    }
+    qint64 nCurRow = ui->ListWidget_musicName->currentRow();
+    qint64 nSize = ui->ListWidget_musicName->count();
+    nCurRow = (nCurRow - 1 + nSize) % nSize;
+    qDebug() << "cur row = " << nCurRow <<endl;
+    ui->ListWidget_musicName->setCurrentRow(nCurRow);
+    m_curSelectSong = m_musicInfoList.at(nCurRow);
+
+    setPlayerSource();
+    on_pushButton_rePlay_clicked();
+    updatePlayBtnIcon();
+}
+
+
+void tcpController::on_btnNext_clicked()
+{
+    if (m_musicInfoList.empty())
+    {
+        return;
+    }
+    qint64 nCurRow = ui->ListWidget_musicName->currentRow();
+    qint64 nSize = ui->ListWidget_musicName->count();
+    nCurRow = (nCurRow + 1) % nSize;
+     ui->ListWidget_musicName->setCurrentRow(nCurRow);
+    m_curSelectSong = m_musicInfoList.at(nCurRow);
+    setPlayerSource();
+    on_pushButton_rePlay_clicked();
+    updatePlayBtnIcon();
+}
+
+
+void tcpController::on_volumeSlider_valueChanged(int value)
+{
+    QString ins;
+    ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_SET_VOLUME, value));
+    sendData2all(ins.toLatin1());
+
+    delay_ms(delayTime);
+    m_audioOutput.setVolume(static_cast<double>(value) / 100.0);
+}
+
+
+void tcpController::on_btnVolume_clicked()
+{
+     if(ui->volumeSlider->isHidden()){
+        ui->volumeSlider->show();
+    }else{
+        ui->volumeSlider->hide();
+    }
 }
 

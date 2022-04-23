@@ -145,8 +145,14 @@ void homePage::deviceList_addDevice(qint64 id)
         QMessageBox::warning(this, tr(__FUNCTION__), tr("invalid id"));
         return;
     }
-    ui->listWidget_devices->addItem(QString::number(id));
+//    ui->listWidget_devices->addItem(QString::number(id));
+    QListWidgetItem *item = new QListWidgetItem(QString::number(id));
+    item->setBackground(QBrush(Qt::black));
     ui->listWidget_devices->sortItems();
+    QString qstrFamily = "Segoe UI";
+    item->setFont(QFont(qstrFamily, 16, 6));
+    item->setTextAlignment(Qt::AlignHCenter);
+    ui->listWidget_devices->addItem(item);
     addItem2AllChannelComboBox(QString::number(id));
 }
 

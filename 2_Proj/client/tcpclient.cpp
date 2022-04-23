@@ -119,7 +119,7 @@ void tcpclient::ReadData() {
             }
 
             //test
-            ui->plainTextEditRecv->appendPlainText("due     time: " + QString::number((dueTime)));
+            ui->plainTextEditRecv->appendPlainText("due      time: " + QString::number((dueTime)));
             ui->plainTextEditRecv->appendPlainText("current time: " + QString::number(QTime::currentTime().msecsSinceStartOfDay()));
             //test end
 
@@ -127,7 +127,7 @@ void tcpclient::ReadData() {
 
             qint64 uDelayTime = dueTime - QTime::currentTime().msecsSinceStartOfDay();
             if (uDelayTime < 0) uDelayTime = 0;
-//            ui->plainTextEditRecv->appendPlainText(tr("delay time = %1").arg(uDelayTime));
+            ui->plainTextEditRecv->appendPlainText(tr("delay time = %1").arg(uDelayTime));
             /* start delay */
             QTimer::singleShot(uDelayTime, Qt::PreciseTimer, this, [=]() { // connect delay func
             qDebug() << "time out, current time: " << QTime::currentTime().msecsSinceStartOfDay() << endl;

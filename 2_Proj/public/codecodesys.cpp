@@ -2,8 +2,8 @@
 using Qt::endl;
 
 /* initiate static member variables */
-qint64 codecodeSys::m_delayMs = 200; // delay 200 ms
-qint64 codecodeSys::m_timePerIns = 20; // ms
+qint64 codecodeSys::m_delayMs = 1000; // delay 200 ms
+qint64 codecodeSys::m_timePerIns = 500; // ms
 qint64 codecodeSys::m_clientNumber = 0;
 
 codecodeSys::codecodeSys(QObject *parent)

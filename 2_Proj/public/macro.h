@@ -34,6 +34,17 @@ const QString FILE_CHANNEL_NAME_5_RIGHT_BACK = "5rightBac";
 /* ffmpeg */
 const QString FFMPEG_SPLIT_2 = "ffmpeg -i %1 -filter_complex \"[0:a]channelsplit=channel_layout=stereo[left][right]\" -map \"[left]\" %2_" + FILE_CHANNEL_NAME_2_LEFT + ".wav -map \"[right]\" %2_" + FILE_CHANNEL_NAME_2_RIGHT + ".wav";
 
+const QString FFMPEG_SPLIT_5 = "ffmpeg -i %1 \
+        -filter_complex \"channelsplit=channel_layout=5.1[FL][FR][FC][LFE][BL][BR]\" \
+        -map \"[FL]\" %2_" + FILE_CHANNEL_NAME_5_LEFT_FORE + ".wav \
+        -map \"[FR]\" %2_" + FILE_CHANNEL_NAME_5_LEFT + ".wav \
+        -map \"[FC]\" %2_" + FILE_CHANNEL_NAME_5_LEFT_BACK + ".wav \
+        -map \"[LFE]\" %2_" + FILE_CHANNEL_NAME_5_RIGHT_FORE + ".wav \
+        -map \"[BL]\" %2_" + FILE_CHANNEL_NAME_5_RIGHT + ".wav \
+        -map \"[BR]\" %2_" + FILE_CHANNEL_NAME_5_RIGHT_BACK + ".wav";
+
+const QString FFMPEG_GET_MEDIA_INFO = "ffprobe -v error -show_entries stream=channels,channel_layout -of default=nw=1 \"%1\" ";
+
 /* android */
 const QString PATH_ANDROID_ROOT = "/storage/emulated/0/";
 const QString PATH_ANDROID_BASE = "/storage/emulated/0/Documents/";
@@ -49,11 +60,13 @@ const qint64 ACT_OBJECT_HOMEPAGE = 1;
 
 /* action Name */
 const qint64 ACT_NAME_PLAYBACK = 0;
-const qint64 ACT_NAME_REPLAY = 1;
-const qint64 ACT_NAME_ASSIGN_ID = 2;
+const qint64 ACT_NAME_SET_VOLUME= 7;
+const qint64 ACT_NAME_REPLAY = 8;
+const qint64 ACT_NAME_ASSIGN_ID = 9;
 
 const qint64 ACT_NAME_ASSIGN_CHANNEL = 10;
 const qint64 ACT_NAME_SET_SOURCE = 11;
+const qint64 ACT_NAME_SET_POS = 12;
 
 /* instructions */
 
