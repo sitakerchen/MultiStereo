@@ -192,16 +192,16 @@ void MusicPlayer::on_pushButton_music_clicked() {
 
 void MusicPlayer::on_btnPlay_clicked()
 {
-    if (m_player.playbackState() == QMediaPlayer::PlayingState)
-    {
-        action_playBack(false);
-        qDebug() << "status : false" << endl;
-    }
-    else
-    {
-        action_playBack(true);
-        qDebug() << "status : true" << endl;
-    }
+//    if (m_player.playbackState() == QMediaPlayer::PlayingState)
+//    {
+//        action_playBack(false);
+//        qDebug() << "status : false" << endl;
+//    }
+//    else
+//    {
+//        action_playBack(true);
+//        qDebug() << "status : true" << endl;
+//    }
 }
 
 void MusicPlayer::ins_process(qint64 uAct_name, QString uAct_val)

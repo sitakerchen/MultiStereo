@@ -574,7 +574,7 @@ void tcpController::on_pushButton_rePlay_clicked()
 
     /* remote */
     QString ins;
-    ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_REPLAY, 1));
+    ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_PLAYBACK, 1));
     sendData2all(ins.toLatin1());
 
     /* self */
