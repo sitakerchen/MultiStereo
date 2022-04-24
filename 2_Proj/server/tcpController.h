@@ -19,6 +19,7 @@
 #include <QFileDialog>
 #include "../public/mediafile.h"
 #include "../public/macro.h"
+#include "../public/delayCalculator.h"
 #include "../public/codecodesys.h"
 #include "identitycontroller.h"
 
@@ -67,7 +68,7 @@ private:
     QFileInfo m_curSelectSong;
 
 public slots:
-    void delay_ms(qint64 ms);
+    void delay_ms(qint64 ms = 0);
     void updatePosition(qint64 pos);  // no need
     void updateDuration(qint64 duration); // no need to send which can do by itself
     void updatePlayBtnIcon(); // no need
@@ -97,7 +98,7 @@ public slots:
     void on_pushButton_PlayList_clicked(); // refresh the list widget
 
 signals:
-    void evoke_split(const QString &srcFilePath);
+    void evoke_split2(const QString &srcFilePath);
 
     /* UI */
 public slots:

@@ -78,7 +78,9 @@ void tcpclient::create_homeDir() {
 }
 
 void tcpclient::ReadData() {
-  qDebug() << tr("%1").arg(1) << endl;
+    calculator &cal = calculator::getInstance();
+    cal.startDelayTimer(); // start to calculate recv delay
+
   if (true == m_nIsINS) // if in read-INS status
   {
     //取指令
@@ -110,24 +112,29 @@ void tcpclient::ReadData() {
         {
             qDebug() << "ins: " << buf << endl;
             ui->plainTextEditRecv->appendPlainText(buf + '\n');
-            qint64 dueTime = codecodeSys::decode_dueTime(buf, qstrMsg_error);
-            if (dueTime == -1)
+            qint64 nBaseDelay, nSendTime, nSendDelay;
+            qint64 nRet = codecodeSys::decode_delayTime(buf, nBaseDelay, nSendTime, nSendDelay, qstrMsg_error);
+            if (nRet == -1)
             {
-                ui->plainTextEditRecv->appendPlainText("[INS], get dueTime error");
+                ui->plainTextEditRecv->appendPlainText("[INS], decode delayTime error");
+                 ui->plainTextEditRecv->appendPlainText(tr("BaseDelay = %1").arg(nBaseDelay));
+            ui->plainTextEditRecv->appendPlainText(tr("nSendTime = %1").arg( nSendTime));
+            ui->plainTextEditRecv->appendPlainText(tr("nSendDelay = %3\n").arg(nBaseDelay, nSendTime, nSendDelay));
                 m_tcpClient->readAll(); // empty recv buf
                 SendData(qstrMsg_error);
                 return;
             }
 
             //test
-            ui->plainTextEditRecv->appendPlainText("due      time: " + QString::number((dueTime)));
-            ui->plainTextEditRecv->appendPlainText("current time: " + QString::number(QTime::currentTime().msecsSinceStartOfDay()));
+            ui->plainTextEditRecv->appendPlainText(tr("BaseDelay = %1").arg(nBaseDelay));
+            ui->plainTextEditRecv->appendPlainText(tr("nSendTime = %1").arg( nSendTime));
+            ui->plainTextEditRecv->appendPlainText(tr("nSendDelay = %1").arg( nSendDelay));
             //test end
 
             codecodeSys::decode_act(buf, uAct_obj, uAct_name, uAct_val, qstrMsg_error);
 
-            qint64 uDelayTime = dueTime - QTime::currentTime().msecsSinceStartOfDay();
-            if (uDelayTime < 0) uDelayTime = 0;
+            qint64 uDelayTime = cal.playDelay_client(nBaseDelay, nSendTime, nSendDelay, cal.getDelayTime()); // calculate play delay time
+
             ui->plainTextEditRecv->appendPlainText(tr("delay time = %1").arg(uDelayTime));
             /* start delay */
             QTimer::singleShot(uDelayTime, Qt::PreciseTimer, this, [=]() { // connect delay func

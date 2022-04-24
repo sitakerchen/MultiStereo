@@ -71,8 +71,10 @@ const qint64 ACT_NAME_SET_POS = 12;
 /* instructions */
 
 /*
- *     0       1          2                  3                   4            5
- *  (length#)type##name/actionObject##fileSize/actionName##channelNumber/actionValue##dueTime
+ *            0            1                  2              \
+ *  (length#)type##name/actionObject##fileSize/actionName##  \
+ *              3                4           5       6
+ *  channelNumber/actionValue##baseDelay#sendTime#sendDelay
  */
 
 const QString INS_ = "%1##%2##%3##%4";

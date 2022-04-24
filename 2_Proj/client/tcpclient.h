@@ -4,6 +4,7 @@
 #include "../public/mediafile.h"
 #include "../public/macro.h"
 #include "../public/codecodesys.h"
+#include "../public/delayCalculator.h"
 #include <QHostAddress>
 #include <QTime>
 #include <QMainWindow>

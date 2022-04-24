@@ -2,6 +2,7 @@
 #define CODECODESYS_H
 
 #include "../public/macro.h"
+#include "../public/delayCalculator.h"
 #include <QObject>
 #include <QMessageBox>
 #include <QDebug>
@@ -13,11 +14,6 @@ class codecodeSys : public QObject
 public:
     explicit codecodeSys(QObject *parent = nullptr);
 
-private:
-    static qint64 m_delayMs;
-    static qint64 m_timePerIns; // 发送完一条指令要多久
-    static qint64 m_clientNumber;
-
 public:
     static void setClientNumbers(qint64 num);
 
@@ -28,7 +24,7 @@ public slots:
 
     static qint64 decode_type(QString const &ins, QString &msg_error); // type  of instruction decode
 
-    static qint64 decode_dueTime(QString const &ins, QString &msg_error); // return the duTime of INS
+    static qint64 decode_delayTime(QString const &ins, qint64 &baseDelay, qint64  &sendTime, qint64 &sendDelay, QString &msg_error); // return the duTime of INS
 
     static qint64 decode_file(QString const &ins, QString &name, qint64 &uSize,
                               qint64 &num,

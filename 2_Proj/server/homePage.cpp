@@ -42,7 +42,7 @@ homePage::homePage(QWidget *parent)
     addItem2AllChannelComboBox("null");
 
     /* connect */
-    connect(m_tcpCtr, &tcpController::evoke_split, m_MedaProces, &rawMediaProcess::split_2);
+    connect(m_tcpCtr, &tcpController::evoke_split2, m_MedaProces, &rawMediaProcess::split_2);
     connect(m_MedaProces, &rawMediaProcess::evoke_music_synchronization, m_tcpCtr, &tcpController::synchronize_musicFile);
     connect(m_tcpCtr, &tcpController::evoke_homePage_addItem, this, &homePage::deviceList_addDevice);
     connect(m_tcpCtr, &tcpController::evoke_homePage_RemoveItem, this, &homePage::deviceList_removeDevice);

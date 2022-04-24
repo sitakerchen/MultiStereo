@@ -3,7 +3,7 @@
 using Qt::endl;
 
 // temp
-qint64 delayTime = 1000; // ms
+qint64 delayTime = calculator::getInstance().baseDelayTime(); // ms
 
 tcpController::tcpController(QMainWindow *parent)
     : QMainWindow(parent), ui(new Ui::tcpController) {
@@ -49,8 +49,11 @@ tcpController::tcpController(QMainWindow *parent)
   connect(ui->positionSlider, &QAbstractSlider::valueChanged, this, &tcpController::setPosition);
   connect(ui->positionSlider, &QAbstractSlider::sliderPressed, &m_player, &QMediaPlayer::pause); // pause playing while set pos
   connect(ui->positionSlider, &QAbstractSlider::sliderReleased, &m_player, [=](){
-      delay_ms(delayTime);
-      m_player.play();
+      if (m_player.playbackState() == QMediaPlayer::PlayingState)
+      {
+          delay_ms();
+          m_player.play();
+      }
   });
   connect(&m_player, &QMediaPlayer::positionChanged, this, &tcpController::updatePosition);
   connect(&m_player, &QMediaPlayer::durationChanged, this, &tcpController::updateDuration);
@@ -192,6 +195,7 @@ qint64 tcpController::sendData2all(const QByteArray &data)
         return -1;
     }
     qint64 uTotalWriteSize = 0;
+    calculator::getInstance().startDelayTimer(); // 开始计算发送延时
     for (int i = 0 ; i < nSize ; ++ i)
     {
         uTotalWriteSize += sendData2single(m_ListTcpClient.at(i), data);
@@ -214,15 +218,16 @@ void tcpController::NewConnectionSlot() {
   m_ListTcpClient.append(m_currentClient); // add to list
   qint64 uId = identityController::getInstance().id_allocateId(m_currentClient); // allocate id
   emit evoke_homePage_addItem(uId);
+
+  calculator::getInstance().startDelayTimer(); // casually give a delay
   QString ins = codecodeSys::INS_generator(INS_ASSIGN_ID.arg(uId));
+
   sendData2single(m_currentClient, ins.toLatin1()); // send id to client
 
   ui->comboBox->addItem(
       tr("%1:%2")
           .arg(m_currentClient->peerAddress().toString().split("::ffff:")[1])
           .arg(m_currentClient->peerPort()));
-
-  codecodeSys::setClientNumbers(m_ListTcpClient.length()); // update client number
 
   /* enable only if connexion is established*/
   ui->pushButtonSend->setEnabled(true);
@@ -254,8 +259,6 @@ void tcpController::disConnectedSlot() {
   if (m_ListTcpClient.empty()) {
     ui->pushButtonSend->setEnabled(false);
   }
-
-  codecodeSys::setClientNumbers(m_ListTcpClient.length()); // update
 }
 
 void tcpController::on_pushButtonDisconnect_clicked()
@@ -395,6 +398,8 @@ void tcpController::on_pushButton_sendFile_clicked() {
 
 void tcpController::delay_ms(qint64 ms)
 {
+    calculator &cal = calculator::getInstance();
+    ms = cal.playDelay_server(cal.getDelayTime());
     QTime dieTime = QTime::currentTime().addMSecs(ms);
          while( QTime::currentTime() < dieTime )
              QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
@@ -448,7 +453,7 @@ void tcpController::on_btnPlay_clicked()
         ins = codecodeSys::INS_generator(INS_PLAY);
         sendData2all(ins.toLatin1());
 
-        delay_ms(delayTime);
+        delay_ms();
         m_player.play();
         updatePlayBtnIcon();
     }
@@ -457,7 +462,7 @@ void tcpController::on_btnPlay_clicked()
         ins = codecodeSys::INS_generator(INS_PAUSE);
         sendData2all(ins.toLatin1());
 
-        delay_ms(delayTime);
+        delay_ms();
         m_player.pause();
         updatePlayBtnIcon();
     }
@@ -512,7 +517,7 @@ void tcpController::on_pushButton_PlayList_clicked()
     if (!m_musicInfoList.empty()) m_curSelectSong = m_musicInfoList.at(0); // select first one by default
     for (auto music: m_musicInfoList)
     {
-        emit evoke_split(music.absoluteFilePath());
+        emit evoke_split2(music.absoluteFilePath());
     }
 }
 
@@ -529,7 +534,9 @@ void tcpController::on_ListWidget_musicName_doubleClicked(const QModelIndex &ind
 void tcpController::setChannel(qint64 id, qint64 channelNumber)
 {
     QString ins;
+    calculator::getInstance().startDelayTimer(); // casually give a delay
     ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_ASSIGN_CHANNEL, channelNumber));
+
     sendData2single(identityController::getInstance().whichClient(id), ins.toLatin1());
 }
 
@@ -553,7 +560,7 @@ bool tcpController::setPlayerSource()
     ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_SET_SOURCE, fileName));
     sendData2all(ins.toLatin1());
 
-    delay_ms(delayTime);
+    delay_ms();
     m_player.setSource(QUrl::fromLocalFile(m_curSelectSong.absoluteFilePath()));
     return (m_player.source().toString() != "");
 }
@@ -578,7 +585,7 @@ void tcpController::on_pushButton_rePlay_clicked()
     sendData2all(ins.toLatin1());
 
     /* self */
-    delay_ms(delayTime);
+    delay_ms();
     m_player.stop();
     m_player.play();
     updatePlayBtnIcon();
@@ -629,7 +636,7 @@ void tcpController::on_volumeSlider_valueChanged(int value)
     ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_SET_VOLUME, value));
     sendData2all(ins.toLatin1());
 
-    delay_ms(delayTime);
+    delay_ms();
     m_audioOutput.setVolume(static_cast<double>(value) / 100.0);
 }
 

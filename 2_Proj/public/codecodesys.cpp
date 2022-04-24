@@ -1,30 +1,24 @@
 #include "codecodesys.h"
 using Qt::endl;
 
-/* initiate static member variables */
-qint64 codecodeSys::m_delayMs = 1000; // delay 200 ms
-qint64 codecodeSys::m_timePerIns = 500; // ms
-qint64 codecodeSys::m_clientNumber = 0;
-
 codecodeSys::codecodeSys(QObject *parent)
     : QObject{parent}
 {
 
 }
 
-void codecodeSys::setClientNumbers(qint64 num)
-{
-    m_clientNumber = num;
-}
-
 // prefix = 5位10进制数+#
 QString codecodeSys::INS_generator(QString const &qstrIns)
 {
     /* add a time section to the tail of INS */
-    QString qstrDueTime = "##" + QString("%1").arg(QTime::currentTime().msecsSinceStartOfDay() + m_delayMs + m_clientNumber * m_timePerIns);
+    calculator &cal = calculator::getInstance();
+    QString qstrBaseDelay = "##" + QString::number(cal.baseDelayTime());
+    QString qstrSendTime = "##" +  QString::number(QTime::currentTime().msecsSinceStartOfDay());
+    QString qstrSendDelay = "##" + QString::number(cal.getDelayTime());
+
 
     /* calculate length */
-    qint64 nlen = qstrIns.length() + qstrDueTime.length();
+    qint64 nlen = qstrIns.length() + qstrBaseDelay.length() + qstrSendTime.length() + qstrSendDelay.length();
     if (nlen > 99999)
     {
         QMessageBox::critical(nullptr, tr("INS error"), tr("instruction too long!!"));
@@ -34,7 +28,7 @@ QString codecodeSys::INS_generator(QString const &qstrIns)
     /* add prefix(指令的总长度，5位10进制数，不计入总长度) */
     QString prefix = QString("%1").arg(nlen, 5, 10, QLatin1Char('0')) + "#";
 
-    return prefix + qstrIns + qstrDueTime;
+    return prefix + qstrIns + qstrBaseDelay + qstrSendTime  + qstrSendDelay;
 }
 
 
@@ -92,15 +86,32 @@ qint64 codecodeSys::decode_type(QString const &ins, QString &msg_error)
     return uType;
 }
 
-qint64 codecodeSys::decode_dueTime(const QString &ins, QString &msg_error)
+/*
+ * in:
+ *      ins
+ *
+ * out:
+ *      baseDelay
+ *      sendTime
+ *      sendDelay
+ *      msg_error
+ */
+qint64 codecodeSys::decode_delayTime(QString const &ins, qint64 &baseDelay, qint64 &sendTime, qint64 &sendDelay, QString &msg_error)
 {
-    qint64 nRet = ins.section("##", 4, 4).toInt();
-    if (nRet > 86400000 or nRet < 0)
+    bool ok1, ok2, ok3;
+    baseDelay = ins.section("##", 4, 4).toLongLong(&ok1);
+    sendTime = ins.section("##", 5, 5).toLongLong(&ok2);
+    sendDelay = ins.section("##", 6, 6).toLongLong(&ok3);
+    if (ok1 and ok2 and ok3)
     {
-        msg_error = "invalid due time";
+        return 0;
+    }
+    else
+    {
+        msg_error = "delay time conversion error";
+        qDebug() << msg_error << endl;
         return -1;
     }
-    return nRet;
 }
 
 /*
