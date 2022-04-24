@@ -86,18 +86,20 @@ bool ProcessControl::wait_forFinished()
 }
 
 // [slot]show error info in the means of pop-up window if an error occured during the process running
-void ProcessControl::ErrorInfo()
+QString ProcessControl::ErrorInfo()
 {
     QString qsErrorInfo = QString::fromLocal8Bit(m_process->readAllStandardError());
-    if (qsErrorInfo.length() <= 0) return;
+    if (qsErrorInfo.length() <= 0) return "";
     emit sendErrorInfo(qsErrorInfo);
+    return qsErrorInfo;
 }
 
 // [slot]display std outPut from process
-void ProcessControl::OutPutInfo()
+QString ProcessControl::OutPutInfo()
 {
     QString qsOutPutInfo = QString::fromLocal8Bit(m_process->readAllStandardOutput());
-    if (qsOutPutInfo.length() <= 0) return;
+    if (qsOutPutInfo.length() <= 0) return "";
     emit sendOutPutInfo(qsOutPutInfo);
+    return qsOutPutInfo;
 }
 

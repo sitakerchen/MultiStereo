@@ -36,18 +36,16 @@ private:
     QString m_rawMediaFolder = "MusicLibrary_raw/";
     QString m_mediaFolder = "MusicLibary/";
 
+public slots:
+    void on_pushButtonChoose1stereo_clicked(); // choose 1 stereo music file
+    QString getFileInfo();
+
+
     /* processcontrol */
 private slots:
     void on_pushButton_writeCmd_clicked(); // write commands to cmd console
 
-public:
-//    void on_pushButtonShowTargetInfo_clicked(); // show info of chosen stereo file (some bugs, ignore this function temporary)
-
     /* split into 2 channels */
-
-public slots:
-    void on_pushButtonChoose1stereo_clicked(); // choose 1 stereo music file
-
     void on_pushButtonSplit2mono_clicked(); // split stereo file into seperate channel (split into several files)
 public slots:
     bool split_2(const QString &srcFilePath); // split double track file into two individual file
@@ -61,6 +59,12 @@ private slots:
 
     void displayOutPutInfo(QString msg); // display process std outPut  info in textBrowser
 
-    /* split into 5 channels */};
+    /* split into 5 channels */
+    void on_pushButtonGetFileInfo_clicked();
+
+public slots:
+    void on_pushButtonSplit6mono_clicked();
+    bool split_6();
+};
 
 #endif // RAWMEDIAPROCESS_H

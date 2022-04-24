@@ -20,8 +20,8 @@ public:
     bool wait_forFinished(); // 方便进程同步，但是这玩意很慢不能凡在写函数里！！！
 
 public slots:
-    void ErrorInfo();
-    void OutPutInfo();
+    QString ErrorInfo();
+    QString OutPutInfo();
 
 signals:
     void sendErrorInfo(QString msg);
