@@ -38,6 +38,8 @@ tcpController::tcpController(QMainWindow *parent)
   /* init widget */
   ui->volumeSlider->setVisible(false);
   ui->volumeSlider->setRange(0, 100);
+  ui->volumeSlider->setTracking(false);
+  ui->positionSlider->setTracking(false); // emit after relase slider
 
   /* tcp connect */
   connect(m_tcpServer, &QTcpServer::newConnection, this,
@@ -45,6 +47,11 @@ tcpController::tcpController(QMainWindow *parent)
 
   /* player connect */
   connect(ui->positionSlider, &QAbstractSlider::valueChanged, this, &tcpController::setPosition);
+  connect(ui->positionSlider, &QAbstractSlider::sliderPressed, &m_player, &QMediaPlayer::pause); // pause playing while set pos
+  connect(ui->positionSlider, &QAbstractSlider::sliderReleased, &m_player, [=](){
+      delay_ms(delayTime);
+      m_player.play();
+  });
   connect(&m_player, &QMediaPlayer::positionChanged, this, &tcpController::updatePosition);
   connect(&m_player, &QMediaPlayer::durationChanged, this, &tcpController::updateDuration);
 
@@ -146,7 +153,8 @@ void tcpController::ReadData() {
     ui->plainTextEditRecv->appendPlainText(buffer);
     if (QString(buffer) == "recv finish") // file send successfully
     {
-      QMessageBox::information(this, tr("File send"), tr("file send finish"));
+//      QMessageBox::information(this, tr("File send"), tr("file send finish"));
+      qDebug() <<  tr("File send") +  tr("file send finish")<< endl;
     }
     IP_Port_Pre = IP_Port;
   }
@@ -166,11 +174,11 @@ qint64 tcpController::sendData2single(QTcpSocket *client, const QByteArray &data
     qint64 nWriteSize = client->write(data);
     if (nWriteSize == data.length())
     {
-        qDebug() << "send one INS success" << endl;
+        qDebug() << "send one INS " << data <<  " success" << endl;
     }
     else
     {
-        qDebug() << "send one INS fail" << endl;
+        qDebug() << "send one INS " << data << " fail" << endl;
     }
     return nWriteSize;
 }
@@ -458,6 +466,11 @@ void tcpController::on_btnPlay_clicked()
 
 void tcpController::on_pushButton_PlayList_clicked()
 {
+    if (m_player.playbackState() == QMediaPlayer::PlayingState)
+    {
+        QMessageBox::warning(this, tr(__FUNCTION__), tr("please pause music first then sync the music library"));
+        return;
+    }
     QStringList filters;
     m_musicInfoList.clear();
     filters << QString("*.mp3");
@@ -506,11 +519,10 @@ void tcpController::on_pushButton_PlayList_clicked()
 void tcpController::on_ListWidget_musicName_doubleClicked(const QModelIndex &index)
 {
     m_curSelectSong = m_musicInfoList.at(index.row()); // set current song
-    m_player.setSource(QUrl::fromLocalFile(m_curSelectSong.absoluteFilePath()));
+//    m_player.setSource(QUrl::fromLocalFile(m_curSelectSong.absoluteFilePath()));
+    setPlayerSource();
 
-    QString fileName = index.data().toString();
-    qDebug() << "fileName: " << fileName << endl;
-        on_pushButton_rePlay_clicked(); // 双击设定曲目后播放
+    on_pushButton_rePlay_clicked(); // 双击设定曲目后播放
     updatePlayBtnIcon();
 }
 
@@ -529,7 +541,6 @@ void tcpController::setPosition(int pos)
         ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_SET_POS, pos));
         sendData2all(ins.toLatin1());
 
-        delay_ms(delayTime);
         m_player.setPosition(pos);
     }
 }
@@ -538,6 +549,7 @@ bool tcpController::setPlayerSource()
 {
     QString ins;
     QString fileName = ui->ListWidget_musicName->currentIndex().data().toString();
+    qDebug() << "set source file name: " << fileName << endl;
     ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_SET_SOURCE, fileName));
     sendData2all(ins.toLatin1());
 
@@ -562,7 +574,7 @@ void tcpController::on_pushButton_rePlay_clicked()
 
     /* remote */
     QString ins;
-    ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_REPLAY, 0));
+    ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_REPLAY, 1));
     sendData2all(ins.toLatin1());
 
     /* self */
@@ -601,8 +613,10 @@ void tcpController::on_btnNext_clicked()
     qint64 nCurRow = ui->ListWidget_musicName->currentRow();
     qint64 nSize = ui->ListWidget_musicName->count();
     nCurRow = (nCurRow + 1) % nSize;
-     ui->ListWidget_musicName->setCurrentRow(nCurRow);
+    qDebug() << "cur row = " << nCurRow <<endl;
+    ui->ListWidget_musicName->setCurrentRow(nCurRow);
     m_curSelectSong = m_musicInfoList.at(nCurRow);
+
     setPlayerSource();
     on_pushButton_rePlay_clicked();
     updatePlayBtnIcon();

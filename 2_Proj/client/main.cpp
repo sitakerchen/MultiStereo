@@ -19,9 +19,10 @@ int main(int argc, char *argv[]) {
 
   /* music player */
   QObject::connect(&client, &tcpclient::evoke_music, &player, &MusicPlayer::ins_process);
+  QObject::connect(&client, &tcpclient::evoke_scanLib, &player, &MusicPlayer::updatePlayList);
 
   /* home page */
-  QObject::connect(&client, &tcpclient::evoker_homePage, &w, &homePage::ins_process);
+  QObject::connect(&client, &tcpclient::evoke_homePage, &w, &homePage::ins_process);
 
   w.show();
   return a.exec();

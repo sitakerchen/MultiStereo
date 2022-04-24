@@ -60,9 +60,9 @@ const qint64 ACT_OBJECT_HOMEPAGE = 1;
 
 /* action Name */
 const qint64 ACT_NAME_PLAYBACK = 0;
-const qint64 ACT_NAME_SET_VOLUME= 7;
-const qint64 ACT_NAME_REPLAY = 8;
-const qint64 ACT_NAME_ASSIGN_ID = 9;
+const qint64 ACT_NAME_REPLAY = 1;
+const qint64 ACT_NAME_SET_VOLUME= 2;
+const qint64 ACT_NAME_ASSIGN_ID = 3;
 
 const qint64 ACT_NAME_ASSIGN_CHANNEL = 10;
 const qint64 ACT_NAME_SET_SOURCE = 11;

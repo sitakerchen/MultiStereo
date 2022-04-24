@@ -33,6 +33,7 @@ tcpclient::tcpclient(QWidget *parent)
           &tcpclient::ReadData); // 连接准备读就绪信号与读数据槽函数
   connect(m_tcpClient, &QTcpSocket::errorOccurred, this,
           &tcpclient::ReadError); // 连接错误信号与错误处理槽函数
+
 }
 
 tcpclient::~tcpclient() {
@@ -140,7 +141,7 @@ void tcpclient::ReadData() {
                 else if (uAct_obj == ACT_OBJECT_HOMEPAGE)
                 {
                     qDebug() << "in home emit" << endl;
-                    emit evoker_homePage(uAct_name, uAct_val);
+                    emit evoke_homePage(uAct_name, uAct_val);
                 }
                 m_timerDelay.stop();
             });
@@ -271,6 +272,8 @@ void tcpclient::RecvFile()
       Reset_fileRecvStatus();
       /* incase dismiss next INS */
       ReadData();
+      /* scan local music lib */
+      emit evoke_scanLib();
     }
 }
 
