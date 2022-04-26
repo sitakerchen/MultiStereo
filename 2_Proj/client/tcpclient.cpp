@@ -84,7 +84,6 @@ void tcpclient::ReadData() {
   if (true == m_nIsINS) // if in read-INS status
   {
     //取指令
-    qDebug() << tr("%1").arg(2) << endl;
     qint64 uLen = get_INS_length();
     if (uLen == -2) return; // read noting, do nothing
     if (uLen <= 0)
@@ -101,25 +100,25 @@ void tcpclient::ReadData() {
         return;
     }
     qDebug() << "recv ins: " << buf << endl;
+    ui->plainTextEditRecv->appendPlainText(buf + '\n');
     QString qstrMsg_error = "";
     qint64 nType = codecodeSys::decode_type(buf, qstrMsg_error);
     qint64 uAct_name, uAct_obj;
-    QString uAct_val; // for the sake of
+    QString uAct_val;
 
     switch (nType)
     {
         case TYPE_ACT:
         {
-            qDebug() << "ins: " << buf << endl;
-            ui->plainTextEditRecv->appendPlainText(buf + '\n');
             qint64 nBaseDelay, nSendTime, nSendDelay;
             qint64 nRet = codecodeSys::decode_delayTime(buf, nBaseDelay, nSendTime, nSendDelay, qstrMsg_error);
             if (nRet == -1)
             {
+                ui->plainTextEditRecv->appendPlainText("get delay error!:");
                 ui->plainTextEditRecv->appendPlainText("[INS], decode delayTime error");
-                 ui->plainTextEditRecv->appendPlainText(tr("BaseDelay = %1").arg(nBaseDelay));
-            ui->plainTextEditRecv->appendPlainText(tr("nSendTime = %1").arg( nSendTime));
-            ui->plainTextEditRecv->appendPlainText(tr("nSendDelay = %3\n").arg(nBaseDelay, nSendTime, nSendDelay));
+                ui->plainTextEditRecv->appendPlainText(tr("BaseDelay = %1").arg(nBaseDelay));
+                ui->plainTextEditRecv->appendPlainText(tr("nSendTime = %1").arg( nSendTime));
+                ui->plainTextEditRecv->appendPlainText(tr("nSendDelay = %3\n").arg(nBaseDelay, nSendTime, nSendDelay));
                 m_tcpClient->readAll(); // empty recv buf
                 SendData(qstrMsg_error);
                 return;
@@ -129,6 +128,7 @@ void tcpclient::ReadData() {
             ui->plainTextEditRecv->appendPlainText(tr("BaseDelay = %1").arg(nBaseDelay));
             ui->plainTextEditRecv->appendPlainText(tr("nSendTime = %1").arg( nSendTime));
             ui->plainTextEditRecv->appendPlainText(tr("nSendDelay = %1").arg( nSendDelay));
+            ui->plainTextEditRecv->appendPlainText(tr("nRecvDelay = %1").arg(cal.getDelayTime()));
             //test end
 
             codecodeSys::decode_act(buf, uAct_obj, uAct_name, uAct_val, qstrMsg_error);
@@ -143,6 +143,7 @@ void tcpclient::ReadData() {
                 if (uAct_obj == ACT_OBJECT_PLAYER)
                 {
                     qDebug() << "in music emit" << endl;
+
                     emit evoke_music(uAct_name, uAct_val);
                 }
                 else if (uAct_obj == ACT_OBJECT_HOMEPAGE)
@@ -156,7 +157,6 @@ void tcpclient::ReadData() {
         }
         case TYPE_FILE:
         {
-            qDebug() << "ins: " << buf << endl;
             //初始化
             qint64 nRet = codecodeSys::decode_file(buf, m_mdiFile.fileName, m_mdiFile.fileSize, m_mdiFile.channelNumber, qstrMsg_error);
             if (nRet != 0) // error handle
@@ -237,6 +237,7 @@ void tcpclient::ReadData() {
         }
 
     }
+    ReadData(); // in case INS remains in buf
     // INS process end
   }
   else // recv file
@@ -267,7 +268,6 @@ void tcpclient::RecvFile()
 
     if (m_mdiFile.recvSize == m_mdiFile.fileSize)
     {
-  qDebug() << tr("%1").arg(9) << endl;
       //发送接收文件完成的消息 respond
       m_tcpClient->write("recv finish");
 
@@ -275,12 +275,12 @@ void tcpclient::RecvFile()
 
       m_mdiFile.file.close(); //关闭文件
 
+      /* update local music lib */
+      emit evoke_scanLib();
       /* reset status and wait for next transmission */
       Reset_fileRecvStatus();
       /* incase dismiss next INS */
       ReadData();
-      /* scan local music lib */
-      emit evoke_scanLib();
     }
 }
 

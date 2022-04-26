@@ -29,96 +29,87 @@ MusicPlayer::MusicPlayer(QWidget *parent)
   });
   connect(&m_player, &QMediaPlayer::positionChanged, this, &MusicPlayer::updatePosition);
   connect(&m_player, &QMediaPlayer::durationChanged, this, &MusicPlayer::updateDuration);
+  connect(&m_player, &QMediaPlayer::mediaStatusChanged, this ,[=](QMediaPlayer::MediaStatus status){
+      qDebug() << "mediaStatusChanged " << status << endl;
+  });
+  connect(&m_player, &QMediaPlayer::sourceChanged, this, [=](const QUrl &media){
+     qDebug() <<"mediaSourceChanged source: " << media << endl;
+  });
 }
 
-MusicPlayer::~MusicPlayer() { delete ui; }
-
-bool MusicPlayer::action_playBack(bool act)
+MusicPlayer::~MusicPlayer()
 {
-    qDebug() << "has audio? :" << m_player.hasAudio() << endl;
+    for (auto fileList: m_musicMap)
+    {
+        if (fileList)
+        {
+            delete fileList;
+            fileList = nullptr;
+        }
+    }
+    delete ui;
+}
+
+void MusicPlayer::action_playBack(bool act)
+{
+    qDebug() << __FUNCTION__ << endl;
     if (act) m_player.play();
     else m_player.pause();
-    return true;
+    updatePlayBtnIcon();
 }
 
-bool MusicPlayer::action_Volume(qint64 per)
+void MusicPlayer::action_Volume(qint64 per)
 {
-    qDebug() << "act volume suc" << endl;
+    qDebug() << __FUNCTION__ << endl;
     m_audioOutput.setVolume(static_cast<double>(per) / 100.0);
-    return true;
 }
 
-bool MusicPlayer::action_rePlay()
+void MusicPlayer::action_rePlay()
 {
-    qDebug() << "act replay suc" << endl;
+    qDebug() << __FUNCTION__ << endl;
     m_player.stop();
     m_player.play();
-    return true;
+    updatePlayBtnIcon();
 }
 
-bool MusicPlayer::action_setSource(QString folderName)
+void MusicPlayer::action_setSource(QString folderName)
 {
-    QDir dir(PATH_ANDROID_APP_MUSIC);
-    if (!dir.exists(folderName))
+    qDebug() << __FUNCTION__ << endl;
+    if (m_musicMap.find(folderName) == m_musicMap.end())
     {
-        qDebug() << tr("error, music file folder [%1] not exist").arg(folderName) << endl;
-        return false;
+        qDebug() << __FUNCTION__ << "musicFile not found" << endl;
+        QMessageBox::critical(this, __FUNCTION__, "musicFile not found");
+        return;
     }
-    dir.cd(folderName);
-    QString qstrSourceName = folderName + "_" + m_toChannelName[m_channelIndex] + ".wav";
-    qDebug() << "Source Name = " << qstrSourceName << endl;
+    QString qstrMusic = folderName + "_" + m_toChannelName[m_channelIndex] + ".wav";
+    for (auto music: *m_musicMap[folderName])
+    {
+        if (music.fileName() == qstrMusic)
+        {
+            qDebug() << "music path = " << music.absoluteFilePath() << endl;
+            m_player.setSource(QUrl::fromLocalFile(music.absoluteFilePath()));
 
-    if (dir.exists(qstrSourceName))
-    {
-        qDebug() << "Source Name = " << qstrSourceName << endl;
-        qDebug() << "Source path = " << dir.absoluteFilePath(qstrSourceName);
-        m_player.setSource(QUrl::fromLocalFile(dir.absoluteFilePath(qstrSourceName)));
-        for (int row = 0 ; row < ui->listWidget_musicList->count() ; ++ row)
-        {
-            qDebug() << " cur row text = " << ui->listWidget_musicList->item(row)->text() << endl;
-            qDebug() << "folder name = " << folderName << endl;
-            if (ui->listWidget_musicList->item(row)->text() == folderName)
-            {
-                qDebug() << "match !" << endl;
-                ui->listWidget_musicList->setCurrentRow(row);
-                break;
-            }
+            return;
         }
-        return true;
     }
-    else
-    {
-        QStringList filters = {"*.mp3", "*.wav"};
-        QDirIterator dir_iterator(dir.absolutePath(), filters, QDir::NoDotAndDotDot);
-        while (dir_iterator.hasNext())
-        {
-            dir_iterator.next();
-            m_player.setSource(QUrl::fromLocalFile(dir_iterator.filePath()));
-            qDebug() << tr("error, music file [%1] not exist, playing the first music file by default").arg(qstrSourceName) << endl;
-            return false;
-        }
-        QMessageBox::critical(this, tr(__FUNCTION__), tr("empty folder!"));
-        return false;
-    }
+    qDebug() << "use default music file" << endl;
+    auto defaultMusic = m_musicMap[folderName]->begin()->absoluteFilePath();
+    m_player.setSource(QUrl::fromLocalFile(defaultMusic));
 }
 
-bool MusicPlayer::action_setChannel(qint64 channelIndex)
+void MusicPlayer::action_setChannel(qint64 channelIndex)
 {
-    if (channelIndex < 1 or channelIndex > 8)
-    {
-        qDebug() << "error, invalid channel index " << endl;
-        return false;
-    }
-    qDebug() << "act set channel suc" << endl;
+    qDebug() << __FUNCTION__ << endl;
     m_channelIndex = channelIndex;
-    return true;
 }
 
-bool MusicPlayer::action_setPos(qint64 pos)
+void MusicPlayer::action_setPos(qint64 pos)
 {
-    qDebug() << "act set pos suc" << endl;
+    qDebug() << __FUNCTION__ << endl;
+    QMediaPlayer::PlaybackState before = m_player.playbackState();
+    m_player.pause();
     m_player.setPosition(pos);
-    return true;
+    if (before == QMediaPlayer::PlayingState) m_player.play();
 }
 
 QString MusicPlayer::tool_forMatTime(qint64 timeMilliSeconds)
@@ -143,6 +134,7 @@ void MusicPlayer::updateDuration(qint64 duration)
     ui->positionSlider->setRange(0, static_cast<int>(duration));
     ui->positionSlider->setEnabled(static_cast<int>(duration) > 0);
     ui->positionSlider->setPageStep(static_cast<int>(duration));
+    ui->Label_position_2->setText(tool_forMatTime(m_player.duration()));
 }
 
 void MusicPlayer::updatePlayBtnIcon()
@@ -164,12 +156,24 @@ void MusicPlayer::updatePlayList()
     while (dir_iterator.hasNext())
     {
         dir_iterator.next();
-        ui->listWidget_musicList->addItem(dir_iterator.fileName());
-        qDebug() << "file name = " << dir_iterator.fileName() << endl;
+        QString qstrFileFolder = dir_iterator.fileName();
+        qDebug() << "file name = " << qstrFileFolder << endl;
+        if (m_musicMap.find(qstrFileFolder) == m_musicMap.end()) m_musicMap[qstrFileFolder] = new QFileInfoList;
+        m_musicMap[qstrFileFolder]->clear();
+
+        /* add to file info map */
+        ui->listWidget_musicList->addItem(qstrFileFolder); // add file name to playList
+        qDebug() << "folder path = " << dir_iterator.filePath() << endl;
+        QDirIterator dir_iterator_file(dir_iterator.filePath(), QDir::NoDotAndDotDot | QDir::Files);
+        while (dir_iterator_file.hasNext())
+        {
+            dir_iterator_file.next();
+            qDebug() << "file path = " << dir_iterator_file.filePath() << endl;
+            m_musicMap[qstrFileFolder]->append(dir_iterator_file.fileInfo());
+        }
     }
+    ui->listWidget_musicList->sortItems();
 }
-
-
 
 void MusicPlayer::ShowMyself()
 {
@@ -190,25 +194,10 @@ void MusicPlayer::on_pushButton_music_clicked() {
     ShowMyself();
 }
 
-void MusicPlayer::on_btnPlay_clicked()
-{
-//    if (m_player.playbackState() == QMediaPlayer::PlayingState)
-//    {
-//        action_playBack(false);
-//        qDebug() << "status : false" << endl;
-//    }
-//    else
-//    {
-//        action_playBack(true);
-//        qDebug() << "status : true" << endl;
-//    }
-}
-
 void MusicPlayer::ins_process(qint64 uAct_name, QString uAct_val)
 {
-    qDebug() << "in music" << endl;
+    qDebug() << "in music";
     qDebug() << "uAct_name = " << uAct_name <<  "uAct_val = " << uAct_val << endl;
-    qDebug() << "player's source = " << m_player.source() << endl;
 //    ui->listWidget_musicList->addItem(m_player.source().toString());
     switch (uAct_name) {
     case ACT_NAME_PLAYBACK:
@@ -239,8 +228,8 @@ void MusicPlayer::ins_process(qint64 uAct_name, QString uAct_val)
 //        break;
 
     default:
+        qDebug() << "uAct_name: " << uAct_name << " no valid" << endl;
         break;
     }
-    updatePlayBtnIcon();
 }
 

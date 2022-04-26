@@ -43,21 +43,42 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>248</width>
-             <height>617</height>
+             <width>236</width>
+             <height>585</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
             <item row="0" column="0">
              <widget class="QPlainTextEdit" name="plainTextEditRecv">
+              <property name="cursor" stdset="0">
+               <cursorShape>SizeVerCursor</cursorShape>
+              </property>
               <property name="mouseTracking">
-               <bool>false</bool>
+               <bool>true</bool>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
               </property>
               <property name="verticalScrollBarPolicy">
                <enum>Qt::ScrollBarAlwaysOff</enum>
               </property>
               <property name="sizeAdjustPolicy">
                <enum>QAbstractScrollArea::AdjustIgnored</enum>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+              <property name="textInteractionFlags">
+               <set>Qt::NoTextInteraction</set>
+              </property>
+              <property name="backgroundVisible">
+               <bool>true</bool>
+              </property>
+              <property name="centerOnScroll">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -196,7 +217,7 @@
      <x>0</x>
      <y>0</y>
      <width>386</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>

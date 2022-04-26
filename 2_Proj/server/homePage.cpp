@@ -1,5 +1,6 @@
 #include "homePage.h"
 #include "ui_homePage.h"
+
 using Qt::endl; using PC = ProcessControl;
 
 homePage::homePage(QWidget *parent)
@@ -35,7 +36,7 @@ homePage::homePage(QWidget *parent)
     m_toChannelIndex[FILE_CHANNEL_NAME_5_RIGHT_FORE] = FILE_CHANNEL_5_RIGHT_FORE;
     m_toChannelIndex[FILE_CHANNEL_NAME_5_RIGHT] = FILE_CHANNEL_5_RIGHT;
     m_toChannelIndex[FILE_CHANNEL_NAME_5_RIGHT_BACK] = FILE_CHANNEL_5_RIGHT_BACK;
-    m_maxSize = 6;
+    m_maxSize = 20; // 与声道数保持一致(channel number + 1),干脆开大点
     m_lastId = QVector<qint64>(m_maxSize, -1);
 
     /* initiate widget */

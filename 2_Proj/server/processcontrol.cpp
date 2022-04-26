@@ -74,7 +74,7 @@ bool ProcessControl::setWorkingPath(QString qstrPath)
 void ProcessControl::writeCommand(QString qstrCmd)
 {
     qstrCmd += "\r\n"; // indispensable
-    QByteArray qbCmd = qstrCmd.toLatin1();
+    QByteArray qbCmd = qstrCmd.toUtf8();
     char * szCmd = qbCmd.data();
     long long nlen = qstrCmd.length();
     m_process->write(szCmd, nlen);

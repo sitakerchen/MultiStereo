@@ -2,6 +2,7 @@
 
 calculator::Release calculator::m_MemRelease;
 calculator *calculator::m_calculator;
+QElapsedTimer calculator::m_delayTimer;
 
 calculator::calculator(QObject *parent)
     : QObject{parent}
@@ -37,6 +38,7 @@ qint64 calculator::playDelay_client(qint64 baseDelay, qint64 sendTime, qint64 se
 
 qint64 calculator::playDelay_server(qint64 allInsSendDelay)
 {
+    qDebug() <<"all send delay = " << allInsSendDelay << Qt::endl;
     qint64 nDelay = m_baseDelayTime - allInsSendDelay;
     if (nDelay < 0) return 0;
     else return nDelay;
@@ -44,7 +46,7 @@ qint64 calculator::playDelay_server(qint64 allInsSendDelay)
 
 void calculator::startDelayTimer()
 {
-    m_delayTimer.start();
+    m_delayTimer.restart();
 }
 
 qint64 calculator::getDelayTime()

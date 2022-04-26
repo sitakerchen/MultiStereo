@@ -16,8 +16,8 @@ public:
 
 private:
     static calculator *m_calculator;
-    qint64 m_baseDelayTime = 200; // 基准延时200ms
-    QElapsedTimer m_delayTimer; // 发送或接收时延计时器
+    static QElapsedTimer m_delayTimer; // 发送或接收时延计时器
+    qint64 m_baseDelayTime = 20; // 基准延时200ms
 
 public:
     Q_PROPERTY(qint64 baseDelayTime READ baseDelayTime WRITE setBaseDelayTime NOTIFY baseDelayTimeChanged)

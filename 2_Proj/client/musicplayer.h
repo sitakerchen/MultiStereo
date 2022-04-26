@@ -34,7 +34,7 @@ public:
 
 private:
     Ui::MusicPlayer *ui;
-    QList<QString> m_musicList; // list of ab path of music in Music foler of app home dir
+    QMap<QString, QFileInfoList*> m_musicMap; // list of ab path of music in Music foler of app home dir
     QMediaPlayer m_player;
     QAudioOutput m_audioOutput;
 
@@ -44,12 +44,12 @@ private:
     QMap<qint64, QString> m_toChannelName;
 
 public:
-    bool action_playBack(bool act); // act == true: play, act == false: pause
-    bool action_Volume(qint64 percentage); // perc = [0, 100]
-    bool action_rePlay();
-    bool action_setSource(QString folderName);
-    bool action_setChannel(qint64 channelIndex);
-    bool action_setPos(qint64 pos);
+    void action_playBack(bool act); // act == true: play, act == false: pause
+    void action_Volume(qint64 percentage); // perc = [0, 100]
+    void action_rePlay();
+    void action_setSource(QString folderName);
+    void action_setChannel(qint64 channelIndex);
+    void action_setPos(qint64 pos);
 
     void tool_scanLocalMusicFile();
     QString tool_forMatTime(qint64 timeMilliSeconds);
@@ -75,11 +75,6 @@ public slots:
     void on_pushButton_main_clicked();       // jump to main page
     void on_pushButton_tcpSetting_clicked(); // jump to tcpSettings page
     void on_pushButton_music_clicked();      // jump to music player page
-
-    // local
-private slots:
-    void on_btnPlay_clicked();
-
 };
 
 #endif // MUSICPLAYER_H

@@ -2,9 +2,6 @@
 #include "ui_tcpController.h"
 using Qt::endl;
 
-// temp
-qint64 delayTime = calculator::getInstance().baseDelayTime(); // ms
-
 tcpController::tcpController(QMainWindow *parent)
     : QMainWindow(parent), ui(new Ui::tcpController) {
   /* 初始化服务器 */
@@ -47,9 +44,14 @@ tcpController::tcpController(QMainWindow *parent)
 
   /* player connect */
   connect(ui->positionSlider, &QAbstractSlider::valueChanged, this, &tcpController::setPosition);
-  connect(ui->positionSlider, &QAbstractSlider::sliderPressed, &m_player, &QMediaPlayer::pause); // pause playing while set pos
-  connect(ui->positionSlider, &QAbstractSlider::sliderReleased, &m_player, [=](){
-      if (m_player.playbackState() == QMediaPlayer::PlayingState)
+  decltype(QMediaPlayer::PlayingState) stateBefore = QMediaPlayer::PausedState; // status before pause the player
+  connect(ui->positionSlider, &QAbstractSlider::sliderPressed, &m_player, [=, &stateBefore](){
+      stateBefore = m_player.playbackState();
+      m_player.pause();
+  }); // pause playing while set pos
+  connect(ui->positionSlider, &QAbstractSlider::sliderReleased, &m_player, [=, &stateBefore](){
+      qDebug() << "before state = " << stateBefore << endl;
+      if (stateBefore == QMediaPlayer::PlayingState)
       {
           delay_ms();
           m_player.play();
@@ -136,13 +138,11 @@ void tcpController::synchronize_musicFile(const QString &folderName, qint64 chan
 }
 
 void tcpController::ReadData() {
-  for (int i = 0; i < m_ListTcpClient.length();
-       ++i) // traver through every established connections
+  for (int i = 0; i < m_ListTcpClient.length(); ++i)
   {
     /*  recv data from client */
     QByteArray buffer = m_ListTcpClient[i]->readAll();
-    if (buffer.isEmpty())
-      continue;
+    if (buffer.isEmpty()) continue;
 
     static QString IP_Port, IP_Port_Pre;
     IP_Port = tr("[%1:%2]:")
@@ -156,8 +156,7 @@ void tcpController::ReadData() {
     ui->plainTextEditRecv->appendPlainText(buffer);
     if (QString(buffer) == "recv finish") // file send successfully
     {
-//      QMessageBox::information(this, tr("File send"), tr("file send finish"));
-      qDebug() <<  tr("File send") +  tr("file send finish")<< endl;
+        qDebug() << tr("send file to device %1 success").arg(identityController::getInstance().whichId(m_ListTcpClient[i])) << endl;
     }
     IP_Port_Pre = IP_Port;
   }
@@ -174,20 +173,23 @@ void tcpController::ReadData() {
  */
 qint64 tcpController::sendData2single(QTcpSocket *client, const QByteArray &data)
 {
-    qint64 nWriteSize = client->write(data);
-    if (nWriteSize == data.length())
+    QByteArray ins = codecodeSys::INS_generator(data).toLatin1();
+    qint64 nWriteSize = client->write(ins);
+    if (nWriteSize == ins.length())
     {
-        qDebug() << "send one INS " << data <<  " success" << endl;
+        qDebug() << "send one INS " << ins <<  " success" << endl;
     }
     else
     {
-        qDebug() << "send one INS " << data << " fail" << endl;
+        qDebug() << "send one INS " << ins << " fail" << endl;
     }
     return nWriteSize;
 }
 
 qint64 tcpController::sendData2all(const QByteArray &data)
 {
+    QElapsedTimer testTimer;
+    testTimer.restart();
     decltype(m_ListTcpClient.size()) nSize = m_ListTcpClient.size();
     if (nSize == 0)
     {
@@ -200,29 +202,16 @@ qint64 tcpController::sendData2all(const QByteArray &data)
     {
         uTotalWriteSize += sendData2single(m_ListTcpClient.at(i), data);
     }
-    if (data.size() * nSize != uTotalWriteSize)
-    {
-        qDebug() << "INS send fail" << endl;
-    }
-    else
-    {
-        qDebug() << "INS send success" << endl;
-    }
+    qDebug() << "local test timer = " << testTimer.elapsed() << endl;
     return uTotalWriteSize;
-//    QtConcurrent::run(this,&tcpController::test); // why error?
 }
 
 void tcpController::NewConnectionSlot() {
   m_currentClient = m_tcpServer->nextPendingConnection();
   /* add to client list and allocate an id */
   m_ListTcpClient.append(m_currentClient); // add to list
-  qint64 uId = identityController::getInstance().id_allocateId(m_currentClient); // allocate id
-  emit evoke_homePage_addItem(uId);
 
-  calculator::getInstance().startDelayTimer(); // casually give a delay
-  QString ins = codecodeSys::INS_generator(INS_ASSIGN_ID.arg(uId));
-
-  sendData2single(m_currentClient, ins.toLatin1()); // send id to client
+  assignId(); // assign id to client
 
   ui->comboBox->addItem(
       tr("%1:%2")
@@ -309,7 +298,7 @@ void tcpController::on_pushButtonClearWindow_clicked() {
 
 void tcpController::on_pushButtonSend_clicked() {
   QString qsSend = ui->plainTextEditSend->toPlainText();
-  QString ins = codecodeSys::INS_generator(INS_MSG.arg(qsSend));
+  QString ins = (INS_MSG.arg(qsSend));
   if (ui->comboBox->count() == 0) // 如果发送窗口没有消息，或者没有已经建立的连接
   {
     QMessageBox::critical(
@@ -330,7 +319,7 @@ void tcpController::on_pushButtonSend_clicked() {
 
     if (m_ListTcpClient[i]->peerAddress().toString().split("::ffff:")[1] == clientIP and m_ListTcpClient[i]->peerPort() == clientPort)
     {
-      m_ListTcpClient[i]->write(ins.toLatin1());
+      sendData2single(m_ListTcpClient[i], ins.toUtf8());
       return;
     }
   }
@@ -382,10 +371,9 @@ void tcpController::on_pushButton_sendFile_clicked() {
     }
     // send instruction first
     QString ins =
-        codecodeSys::INS_generator(INS_FILE.arg(m_outFile.fileName).arg(m_outFile.fileSize).arg(m_outFile.channelNumber));
-      qDebug() << "INS : " << ins << endl;
+        (INS_FILE.arg(m_outFile.fileName).arg(m_outFile.fileSize).arg(m_outFile.channelNumber));
     //轮流发送file instruction
-    qint64 len = sendData2all(ins.toLatin1());
+    qint64 len = sendData2all(ins.toUtf8());
     if (len > 0) // send successfully
     {
       sendFile();
@@ -403,6 +391,7 @@ void tcpController::delay_ms(qint64 ms)
     QTime dieTime = QTime::currentTime().addMSecs(ms);
          while( QTime::currentTime() < dieTime )
              QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+    qDebug() << "server delay = " << ms << endl;
 }
 
 void tcpController::updatePosition(qint64 pos)
@@ -450,22 +439,21 @@ void tcpController::on_btnPlay_clicked()
     QString ins;
     if (m_player.playbackState() == QMediaPlayer::PausedState)
     {
-        ins = codecodeSys::INS_generator(INS_PLAY);
-        sendData2all(ins.toLatin1());
+        ins = (INS_PLAY);
+        sendData2all(ins.toUtf8());
 
         delay_ms();
         m_player.play();
-        updatePlayBtnIcon();
     }
     else
     {
-        ins = codecodeSys::INS_generator(INS_PAUSE);
-        sendData2all(ins.toLatin1());
+        ins = (INS_PAUSE);
+        sendData2all(ins.toUtf8());
 
         delay_ms();
         m_player.pause();
-        updatePlayBtnIcon();
     }
+    updatePlayBtnIcon();
 }
 
 
@@ -519,14 +507,13 @@ void tcpController::on_pushButton_PlayList_clicked()
     {
         emit evoke_split2(music.absoluteFilePath());
     }
+    qDebug() << "sync end" << endl;
 }
 
 void tcpController::on_ListWidget_musicName_doubleClicked(const QModelIndex &index)
 {
     m_curSelectSong = m_musicInfoList.at(index.row()); // set current song
-//    m_player.setSource(QUrl::fromLocalFile(m_curSelectSong.absoluteFilePath()));
     setPlayerSource();
-
     on_pushButton_rePlay_clicked(); // 双击设定曲目后播放
     updatePlayBtnIcon();
 }
@@ -535,9 +522,9 @@ void tcpController::setChannel(qint64 id, qint64 channelNumber)
 {
     QString ins;
     calculator::getInstance().startDelayTimer(); // casually give a delay
-    ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_ASSIGN_CHANNEL, channelNumber));
+    ins = (codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_ASSIGN_CHANNEL, channelNumber));
 
-    sendData2single(identityController::getInstance().whichClient(id), ins.toLatin1());
+    sendData2single(identityController::getInstance().whichClient(id), ins.toUtf8());
 }
 
 void tcpController::setPosition(int pos)
@@ -545,8 +532,8 @@ void tcpController::setPosition(int pos)
     if (qAbs(m_player.position() - pos) > 99)
     {
         QString ins;
-        ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_SET_POS, pos));
-        sendData2all(ins.toLatin1());
+        ins = (codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_SET_POS, pos));
+        sendData2all(ins.toUtf8());
 
         m_player.setPosition(pos);
     }
@@ -557,8 +544,8 @@ bool tcpController::setPlayerSource()
     QString ins;
     QString fileName = ui->ListWidget_musicName->currentIndex().data().toString();
     qDebug() << "set source file name: " << fileName << endl;
-    ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_SET_SOURCE, fileName));
-    sendData2all(ins.toLatin1());
+    ins = (codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_SET_SOURCE, fileName));
+    sendData2all(ins.toUtf8());
 
     delay_ms();
     m_player.setSource(QUrl::fromLocalFile(m_curSelectSong.absoluteFilePath()));
@@ -571,6 +558,16 @@ bool tcpController::setPlayerSource(QString abPath)
     return (m_player.source().toString() != "");
 }
 
+qint64 tcpController::assignId()
+{
+    qint64 uId = identityController::getInstance().id_allocateId(m_currentClient); // allocate id
+    emit evoke_homePage_addItem(uId);
+    calculator::getInstance().startDelayTimer(); // casually give a delay
+    QString ins = (INS_ASSIGN_ID.arg(uId));
+    sendData2single(m_currentClient, ins.toUtf8()); // send id to client
+    return 0;
+}
+
 
 void tcpController::on_pushButton_rePlay_clicked()
 {
@@ -581,8 +578,8 @@ void tcpController::on_pushButton_rePlay_clicked()
 
     /* remote */
     QString ins;
-    ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_PLAYBACK, 1));
-    sendData2all(ins.toLatin1());
+    ins = (codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_PLAYBACK, 1));
+    sendData2all(ins.toUtf8());
 
     /* self */
     delay_ms();
@@ -633,8 +630,8 @@ void tcpController::on_btnNext_clicked()
 void tcpController::on_volumeSlider_valueChanged(int value)
 {
     QString ins;
-    ins = codecodeSys::INS_generator(codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_SET_VOLUME, value));
-    sendData2all(ins.toLatin1());
+    ins = (codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_SET_VOLUME, value));
+    sendData2all(ins.toUtf8());
 
     delay_ms();
     m_audioOutput.setVolume(static_cast<double>(value) / 100.0);

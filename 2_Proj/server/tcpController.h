@@ -13,7 +13,6 @@
 #include <QtConcurrent>
 #include <QFileInfo>
 #include <QMessageBox>
-#include <QRunnable>
 #include <QDir>
 #include <QFuture>
 #include <QFileDialog>
@@ -85,6 +84,7 @@ public slots:
     void setPosition(int pos); //
     bool setPlayerSource(); //
     bool setPlayerSource(QString abPath);  // no need
+    qint64 assignId();
 
     /* media file manage */
 private:

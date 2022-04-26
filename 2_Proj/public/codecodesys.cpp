@@ -16,7 +16,6 @@ QString codecodeSys::INS_generator(QString const &qstrIns)
     QString qstrSendTime = "##" +  QString::number(QTime::currentTime().msecsSinceStartOfDay());
     QString qstrSendDelay = "##" + QString::number(cal.getDelayTime());
 
-
     /* calculate length */
     qint64 nlen = qstrIns.length() + qstrBaseDelay.length() + qstrSendTime.length() + qstrSendDelay.length();
     if (nlen > 99999)
@@ -27,7 +26,6 @@ QString codecodeSys::INS_generator(QString const &qstrIns)
 
     /* add prefix(指令的总长度，5位10进制数，不计入总长度) */
     QString prefix = QString("%1").arg(nlen, 5, 10, QLatin1Char('0')) + "#";
-
     return prefix + qstrIns + qstrBaseDelay + qstrSendTime  + qstrSendDelay;
 }
 

@@ -6,8 +6,8 @@ identityController::Release identityController::m_MemRelease;
 identityController::identityController(QObject *parent)
     : QObject{parent}
 {
-    m_MaxSize = 6;
-    for (int i = 0 ; i < 6 ; ++ i)
+    m_MaxSize = 20; // 干脆开大点
+    for (int i = 0 ; i < m_MaxSize ; ++ i)
     {
         idPool.insert(i);
     }
