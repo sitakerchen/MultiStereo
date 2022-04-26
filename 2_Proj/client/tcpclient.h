@@ -46,7 +46,6 @@ signals:
 
     /* INS process */
 private:
-    QTimer m_timerDelay;
 public:
     qint64 get_INS_length(); // return the length of a INS
 signals:
