@@ -64,7 +64,7 @@ private slots:
 
 public slots:
     void on_pushButtonSplit6mono_clicked();
-    bool split_6();
+    bool split_6(const QString &srcFilePath);
 };
 
 #endif // RAWMEDIAPROCESS_H

@@ -52,10 +52,10 @@ MusicPlayer::~MusicPlayer()
 
 void MusicPlayer::action_playBack(bool act)
 {
-    qDebug() << __FUNCTION__ << endl;
     if (act) m_player.play();
     else m_player.pause();
     updatePlayBtnIcon();
+    qDebug() << __FUNCTION__ << endl;
 }
 
 void MusicPlayer::action_Volume(qint64 per)
@@ -66,10 +66,10 @@ void MusicPlayer::action_Volume(qint64 per)
 
 void MusicPlayer::action_rePlay()
 {
-    qDebug() << __FUNCTION__ << endl;
     m_player.stop();
     m_player.play();
     updatePlayBtnIcon();
+    qDebug() << __FUNCTION__ << endl;
 }
 
 void MusicPlayer::action_setSource(QString folderName)
@@ -105,11 +105,11 @@ void MusicPlayer::action_setChannel(qint64 channelIndex)
 
 void MusicPlayer::action_setPos(qint64 pos)
 {
-    qDebug() << __FUNCTION__ << endl;
-    QMediaPlayer::PlaybackState before = m_player.playbackState();
-    m_player.pause();
+//    QMediaPlayer::PlaybackState before = m_player.playbackState();
     m_player.setPosition(pos);
-    if (before == QMediaPlayer::PlayingState) m_player.play();
+//    if (before == QMediaPlayer::PlayingState)
+//        m_player.play();
+    qDebug() << __FUNCTION__ << endl;
 }
 
 QString MusicPlayer::tool_forMatTime(qint64 timeMilliSeconds)
@@ -231,5 +231,6 @@ void MusicPlayer::ins_process(qint64 uAct_name, QString uAct_val)
         qDebug() << "uAct_name: " << uAct_name << " no valid" << endl;
         break;
     }
+    qDebug() <<"action : " << uAct_name << " execute time : " << calculator::getInstance().getDelayTime() << endl;
 }
 

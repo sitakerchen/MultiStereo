@@ -406,6 +406,7 @@ void tcpController::updateDuration(qint64 duration)
     ui->positionSlider->setRange(0, static_cast<int>(duration));
     ui->positionSlider->setEnabled(static_cast<int>(duration) > 0);
     ui->positionSlider->setPageStep(static_cast<int>(duration));
+    ui->Label_position_2->setText(forMatTime(m_player.duration()));
 }
 
 void tcpController::updatePlayBtnIcon()
@@ -477,13 +478,14 @@ void tcpController::on_pushButton_PlayList_clicked()
         while (dir_iterator_check.hasNext())
         {
             dir_iterator_check.next();
-            /* 如果文件名中出现了#或者_字符强制改为字符~ */
+            /* 如果文件名中出现了#或者_字符或空格强制改为字符~ */
             QDir dir(dir_iterator_check.path());
             QString qstrFileName = dir_iterator_check.fileName();
-            if (qstrFileName.contains('#') or qstrFileName.contains('_'))
+            if (qstrFileName.contains('#') or qstrFileName.contains('_') or qstrFileName.contains(' '))
             {
                 qstrFileName.replace('#', '~');
                 qstrFileName.replace('_', '~');
+                qstrFileName.replace(' ', '~');
                 bool ok = dir.rename(dir_iterator_check.filePath(), dir_iterator_check.path() + '/' + qstrFileName);
                 if (!ok)
                 {
@@ -578,7 +580,7 @@ void tcpController::on_pushButton_rePlay_clicked()
 
     /* remote */
     QString ins;
-    ins = (codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_PLAYBACK, 1));
+    ins = (codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_REPLAY, 1));
     sendData2all(ins.toUtf8());
 
     /* self */

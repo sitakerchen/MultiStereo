@@ -14,8 +14,6 @@ tcpclient::tcpclient(QWidget *parent)
   setWindowTitle(tr("Client"));
   m_isConnected = false; // 初始化为未连接状态
   Reset_fileRecvStatus();
-  m_timerDelay.setTimerType(Qt::PreciseTimer);
-  m_timerDelay.setSingleShot(true); // by default the timer will timeOut every intervals
 
   create_homeDir();
 
@@ -135,6 +133,10 @@ void tcpclient::ReadData() {
 
             qint64 uDelayTime = cal.playDelay_client(nBaseDelay, nSendTime, nSendDelay, cal.getDelayTime()); // calculate play delay time
 
+            // test delay
+            cal.startDelayTimer();
+            // test
+
             ui->plainTextEditRecv->appendPlainText(tr("delay time = %1").arg(uDelayTime));
             /* start delay */
             QTimer::singleShot(uDelayTime, Qt::PreciseTimer, this, [=]() { // connect delay func
@@ -151,7 +153,6 @@ void tcpclient::ReadData() {
                     qDebug() << "in home emit" << endl;
                     emit evoke_homePage(uAct_name, uAct_val);
                 }
-                m_timerDelay.stop();
             });
             break;
         }
@@ -210,18 +211,12 @@ void tcpclient::ReadData() {
             ui->progressBar->setMinimum(0);                         //最小值
             ui->progressBar->setMaximum(static_cast<qint32>(m_mdiFile.fileSize / 1024)); //最大值
             ui->progressBar->setValue(0);                           //当前值
-  qDebug() << tr("%1").arg(4.1) << endl;
   qDebug() << "m_nIsINS: " << m_nIsINS << endl;
-            // test
-//            buf = m_tcpClient->readAll();
-//  qDebug() << "buf size: " << buf.size() << endl;
-            // test
             break;
         }
         case TYPE_MSG:
         {
             qDebug() << "ins: " << buf << endl;
-  qDebug() << tr("%1").arg(5) << endl;
             //初始化
             ui->plainTextEditRecv->appendPlainText(buf);
             break;
@@ -229,7 +224,6 @@ void tcpclient::ReadData() {
         default:
         {
             qDebug() << "ins: " << buf << endl;
-  qDebug() << tr("%1").arg(6) << endl;
             Reset_fileRecvStatus();
             SendData(qstrMsg_error);
             QMessageBox::critical(this, tr("INS error"), qstrMsg_error);
