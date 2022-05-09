@@ -1,0 +1,15 @@
+debug/main.o
+debug/mainwindow.o
+debug/LedNumber.o
+debug/Loading.o
+debug/RoundDot.o
+debug/roundprogressbar.o
+debug/SelfAdaptableLabel.o
+debug/moc_mainwindow.o
+debug/moc_CustomLineEdit.o
+debug/moc_LineEditpart.o
+debug/moc_LedNumber.o
+debug/moc_Loading.o
+debug/moc_RoundDot.o
+debug/moc_roundprogressbar.o
+debug/moc_SelfAdaptableLabel.o

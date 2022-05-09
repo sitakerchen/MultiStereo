@@ -11,11 +11,24 @@ rawMediaProcess::rawMediaProcess(QWidget *parent) :
     /* connect to ffmpeg process */
     connect(&PC::getInstance(), &PC::sendErrorInfo, this, &rawMediaProcess::displayErrorInfo);
     connect(&PC::getInstance(), &PC::sendOutPutInfo, this, &rawMediaProcess::displayOutPutInfo);
+
+    /* to music lib */
+    ProcessControl::getInstance().setWorkingPath(m_workingPath + m_rawMediaFolder);
 }
 
 rawMediaProcess::~rawMediaProcess()
 {
     delete ui;
+}
+
+void rawMediaProcess::delay_ms(qint64 ms)
+{
+    calculator &cal = calculator::getInstance();
+    ms = cal.playDelay_server(cal.getDelayTime());
+    QTime dieTime = QTime::currentTime().addMSecs(ms);
+         while( QTime::currentTime() < dieTime )
+             QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+    qDebug() << "server delay = " << ms << endl;
 }
 
 void rawMediaProcess::on_pushButtonChoose1stereo_clicked()
@@ -29,19 +42,31 @@ void rawMediaProcess::on_pushButtonChoose1stereo_clicked()
     }
 }
 
-QString rawMediaProcess::getFileInfo()
+qint64 rawMediaProcess::getFileChannels(const QString &srcFilePath, qint64 &nChannels)
 {
-    if ( m_urlAudioFile.isValid() == false)
+    QUrl scrFile(srcFilePath);
+    m_urlAudioFile = scrFile;
+    if ( m_urlAudioFile.isValid() == false )
     {
         qDebug() << " url File is invalid " << Qt::endl;
-        return "";
+        nChannels = -1;
+        return -1;
     }
-    QString qstrCmd = FFMPEG_GET_MEDIA_INFO.arg( m_urlAudioFile.fileName());
-    ProcessControl::getInstance().setWorkingPath(m_workingPath + m_rawMediaFolder);
-    PC::getInstance().writeCommand(qstrCmd);
-    QString qstrFileInfo = PC::getInstance().OutPutInfo();
-    qDebug() << "file : " << m_urlAudioFile.fileName() << "\ninfo" << qstrFileInfo << endl;
-    return qstrFileInfo;
+    on_pushButtonGetFileInfo_clicked();
+    PC::getInstance().wait_forFinished();
+    qDebug() << "file : " << m_urlAudioFile.fileName() << "\ninfo" << m_ffmpegFileInfo << endl;
+    QString qstrAim = "channels=(\\d)";
+    QRegExp rx(qstrAim);
+    qint64 nPos = rx.indexIn(m_ffmpegFileInfo);
+    if (nPos >= 0)
+    {
+        qint64 nNumber = rx.cap(1).toInt();
+        qDebug() << "channels = " << nNumber;
+        nChannels = nNumber;
+        return nNumber;
+    }
+    nChannels = -1;
+    return -1;
 }
 
 void rawMediaProcess::on_pushButtonSplit2mono_clicked()
@@ -97,7 +122,6 @@ bool rawMediaProcess::split_2(const QString &srcFilePath)
     }
     QString qstrCmd = FFMPEG_SPLIT_2.arg( m_urlAudioFile.fileName(), m_urlAudioFile.fileName().section('.', 0, 0) );
     qDebug() << "qstrCmd" << qstrCmd << endl;
-    ProcessControl::getInstance().setWorkingPath(m_workingPath + m_rawMediaFolder);
     QDir dir(m_workingPath + m_mediaFolder);
     if (!dir.exists(m_urlAudioFile.fileName().section('.', 0, 0)))
     {
@@ -185,7 +209,6 @@ bool rawMediaProcess::split_6(const QString &srcFilePath)
     }
     QString qstrCmd = FFMPEG_SPLIT_5.arg( m_urlAudioFile.fileName(), m_urlAudioFile.fileName().section('.', 0, 0) );
     qDebug() << "qstrCmd" << qstrCmd << endl;
-    ProcessControl::getInstance().setWorkingPath(m_workingPath + m_rawMediaFolder);
     QDir dir(m_workingPath + m_mediaFolder);
     if (!dir.exists(m_urlAudioFile.fileName().section('.', 0, 0)))
     {
@@ -227,6 +250,7 @@ void rawMediaProcess::displayErrorInfo(QString msg)
 
 void rawMediaProcess::displayOutPutInfo(QString msg)
 {
+    m_ffmpegFileInfo += msg;
     ui->textBrowserOutPut->append(msg);
 }
 
@@ -236,8 +260,21 @@ void rawMediaProcess::on_pushButton_writeCmd_clicked()
     PC::getInstance().writeCommand(qstrCmd);
 }
 
+void rawMediaProcess::to_workingPath()
+{
+    ProcessControl::getInstance().setWorkingPath(m_workingPath + m_rawMediaFolder);
+}
+
 void rawMediaProcess::on_pushButtonGetFileInfo_clicked()
 {
-    getFileInfo();
+     if ( m_urlAudioFile.isValid() == false)
+    {
+        qDebug() << " url File is invalid " << Qt::endl;
+        return;
+    }
+    QString qstrCmd = FFMPEG_GET_MEDIA_INFO.arg( m_urlAudioFile.fileName());
+//    ProcessControl::getInstance().setWorkingPath(m_workingPath + m_rawMediaFolder);
+    m_ffmpegFileInfo = "";
+    PC::getInstance().writeCommand(qstrCmd);
 }
 

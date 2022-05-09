@@ -27,6 +27,8 @@ public slots:
     /* status display */
 public slots:
     void setId(qint64 id);
+    void setStatus(bool stat);
+    void setChannel(QString channel);
 
     /* page jump button */
 signals:

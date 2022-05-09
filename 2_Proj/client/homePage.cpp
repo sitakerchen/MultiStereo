@@ -27,9 +27,30 @@ void homePage::setId(qint64 id)
     ui->label_id->setText(QString::number(id));
 }
 
+void homePage::setStatus(bool stat)
+{
+    if (stat) // connected status
+    {
+        ui->label_status->setText("已连接");
+        ui->label_status->setStyleSheet("background-color: rgba(0, 255, 0, 1);");
+    }
+    else
+    {
+        ui->label_status->setText("未连接");
+        ui->label_status->setStyleSheet("background-color: rgba(255, 0, 0, 1);");
+        setChannel("未分配");
+    }
+}
+
+void homePage::setChannel(QString channel)
+{
+    ui->label_channel->setText(channel);
+}
+
 void homePage::ShowMyself()
 {
-  this->show();
+    ui->pushButton_main->setIcon(QIcon(":/image/image/image-selected/24gl-home2-red.png"));
+    this->show();
 }
 
 

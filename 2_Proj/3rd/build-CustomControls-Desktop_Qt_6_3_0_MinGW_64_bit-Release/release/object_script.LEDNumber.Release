@@ -1,0 +1,15 @@
+release/main.o
+release/mainwindow.o
+release/LedNumber.o
+release/Loading.o
+release/RoundDot.o
+release/roundprogressbar.o
+release/SelfAdaptableLabel.o
+release/moc_mainwindow.o
+release/moc_CustomLineEdit.o
+release/moc_LineEditpart.o
+release/moc_LedNumber.o
+release/moc_Loading.o
+release/moc_RoundDot.o
+release/moc_roundprogressbar.o
+release/moc_SelfAdaptableLabel.o

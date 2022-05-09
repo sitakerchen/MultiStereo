@@ -20,6 +20,7 @@
 #include "../public/macro.h"
 #include "../public/delayCalculator.h"
 #include "../public/codecodesys.h"
+#include "../public/loadinganima.h"
 #include "identitycontroller.h"
 
 QT_BEGIN_NAMESPACE
@@ -49,6 +50,10 @@ signals:
     void evoke_homePage_RemoveItem(qint64 id);
 
     /* send and recv data*/
+private:
+    qint64 m_totalSend = 0;
+    qint64 m_hasSend = 0;
+
 public slots:
     void sendFile(); // send media file to client
     void synchronize_musicFile(const QString &folderName, qint64 channelNumber); // synchronize local music library to client
@@ -91,6 +96,7 @@ private:
     mediaFile m_outFile;
     QVector<QDir> m_musicDir; // dir that contains music
     QList<QFileInfo> m_musicInfoList; // file info list of all accessible music
+    QMap<QString, qint64> m_musicChannels; // channels of each music
     QString m_MusicLibBasePath = "D:/Dev/CourseDesign/MultiStereo/3_Resource/MusicLibary/"; // base bath of music library
 
 public slots:
@@ -99,8 +105,13 @@ public slots:
 
 signals:
     void evoke_split2(const QString &srcFilePath);
+    void evoke_split6(const QString &srcFilePath);
+    void evoke_getChannels(const QString &srcFilePath, qint64 &channels);
 
     /* UI */
+private:
+     RoundProgressBar * m_syncBar; // music sync progress bar
+     RoundProgressBar * m_loadBar;
 public slots:
     void on_pushButtonClearWindow_clicked(); // 清除接收窗口内容
 

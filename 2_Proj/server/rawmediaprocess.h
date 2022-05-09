@@ -10,6 +10,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QUrl>
+#include <QRegExp>
 
 #include "tcpController.h"
 #include "processcontrol.h"
@@ -26,6 +27,8 @@ class rawMediaProcess : public QMainWindow
 public:
     explicit rawMediaProcess(QWidget *parent = nullptr);
     ~rawMediaProcess() override;
+    void delay_ms(qint64 ms = 0);
+
 private:
     Ui::rawMediaProcess *ui;
 
@@ -35,15 +38,17 @@ private:
     QString m_workingPath = "D:/Dev/CourseDesign/MultiStereo/3_Resource/";
     QString m_rawMediaFolder = "MusicLibrary_raw/";
     QString m_mediaFolder = "MusicLibary/";
+    QString m_ffmpegFileInfo;
 
 public slots:
     void on_pushButtonChoose1stereo_clicked(); // choose 1 stereo music file
-    QString getFileInfo();
+    qint64 getFileChannels(const QString &srcFilePath, qint64 & nChannels);
 
 
     /* processcontrol */
 private slots:
     void on_pushButton_writeCmd_clicked(); // write commands to cmd console
+    void to_workingPath();
 
     /* split into 2 channels */
     void on_pushButtonSplit2mono_clicked(); // split stereo file into seperate channel (split into several files)
@@ -59,7 +64,7 @@ private slots:
 
     void displayOutPutInfo(QString msg); // display process std outPut  info in textBrowser
 
-    /* split into 5 channels */
+    /* split into 6 channels */
     void on_pushButtonGetFileInfo_clicked();
 
 public slots:

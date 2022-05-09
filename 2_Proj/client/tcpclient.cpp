@@ -13,6 +13,7 @@ tcpclient::tcpclient(QWidget *parent)
   /* 初始化variables */
   setWindowTitle(tr("Client"));
   m_isConnected = false; // 初始化为未连接状态
+  emit evoke_setStatus(m_isConnected);
   Reset_fileRecvStatus();
 
   create_homeDir();
@@ -29,6 +30,7 @@ tcpclient::tcpclient(QWidget *parent)
   /* 连接信号与槽 */
   connect(m_tcpClient, &QIODevice::readyRead, this,
           &tcpclient::ReadData); // 连接准备读就绪信号与读数据槽函数
+
   connect(m_tcpClient, &QTcpSocket::errorOccurred, this,
           &tcpclient::ReadError); // 连接错误信号与错误处理槽函数
 
@@ -229,21 +231,18 @@ void tcpclient::ReadData() {
             QMessageBox::critical(this, tr("INS error"), qstrMsg_error);
             return;
         }
-
     }
     ReadData(); // in case INS remains in buf
     // INS process end
   }
   else // recv file
   {
-  qDebug() << tr("%1").arg(7) << endl;
-        RecvFile();
+    RecvFile();
   }
 }
 
 void tcpclient::RecvFile()
 {
-  qDebug() << tr("%1").arg(8) << endl;
     /* recv media file */
     QByteArray buf = m_tcpClient->read(m_mdiFile.fileSize - m_mdiFile.recvSize);
     qint64 nLen = m_mdiFile.file.write(buf);
@@ -321,6 +320,7 @@ void tcpclient::ReadError(QAbstractSocket::SocketError) {
   m_tcpClient->disconnectFromHost(); // 先断开TCP连接
   ui->pushButtonDisconnect->setText(tr("连接"));
   m_isConnected = false;
+  emit evoke_setStatus(m_isConnected);
   Reset_fileRecvStatus();
 
   QString msg_error(tr("failed to connect server because %1")
@@ -336,7 +336,11 @@ void tcpclient::SendData(QString data) {
   }
 }
 
-void tcpclient::ShowMyself() { this->show(); }
+void tcpclient::ShowMyself()
+{
+    ui->pushButton_tcpSetting->setIcon(QIcon(":/image/image/image-selected/24gl-gear-red.png"));
+    this->show();
+}
 
 void tcpclient::on_pushButtonDisconnect_clicked() {
   /* 尝试连接服务器 */
@@ -353,6 +357,8 @@ void tcpclient::on_pushButtonDisconnect_clicked() {
       ui->pushButtonDisconnect->setText(tr("断开"));
       ui->pushButtonDisconnect->setEnabled(true);
       m_isConnected = true;
+      emit evoke_setStatus(m_isConnected);
+
     } else { // connect fail
 
       QMessageBox::critical(this, tr("connect error"),
@@ -370,6 +376,7 @@ void tcpclient::on_pushButtonDisconnect_clicked() {
     ui->pushButtonDisconnect->setText("连接");
   }
   m_isConnected = false;
+  emit evoke_setStatus(m_isConnected);
   Reset_fileRecvStatus();
 }
 

@@ -88,19 +88,35 @@ void MusicPlayer::action_setSource(QString folderName)
         {
             qDebug() << "music path = " << music.absoluteFilePath() << endl;
             m_player.setSource(QUrl::fromLocalFile(music.absoluteFilePath()));
-
+            for (int i = 0 ; i < ui->listWidget_musicList->count() ; ++ i)
+            {
+                if (ui->listWidget_musicList->item(i)->text() == folderName)
+                {
+                    ui->listWidget_musicList->setCurrentRow(i);
+                    break;
+                }
+            }
             return;
         }
     }
     qDebug() << "use default music file" << endl;
     auto defaultMusic = m_musicMap[folderName]->begin()->absoluteFilePath();
     m_player.setSource(QUrl::fromLocalFile(defaultMusic));
+    for (int i = 0 ; i < ui->listWidget_musicList->count() ; ++ i)
+    {
+        if (ui->listWidget_musicList->item(i)->text() == folderName)
+        {
+            ui->listWidget_musicList->setCurrentRow(i);
+            break;
+        }
+    }
 }
 
 void MusicPlayer::action_setChannel(qint64 channelIndex)
 {
     qDebug() << __FUNCTION__ << endl;
     m_channelIndex = channelIndex;
+    emit evoke_setChannel(m_toChannelName[m_channelIndex]);
 }
 
 void MusicPlayer::action_setPos(qint64 pos)
@@ -177,7 +193,9 @@ void MusicPlayer::updatePlayList()
 
 void MusicPlayer::ShowMyself()
 {
-  show();
+
+    ui->pushButton_music->setIcon(QIcon(":/image/image/image-selected/24gl-musicAlbum2-red.png"));
+    show();
 }
 
 void MusicPlayer::on_pushButton_main_clicked() {

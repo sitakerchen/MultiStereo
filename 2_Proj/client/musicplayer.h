@@ -38,7 +38,10 @@ private:
     QMediaPlayer m_player;
     QAudioOutput m_audioOutput;
 
-  // action
+signals:
+    void evoke_setChannel(QString channels);
+
+    /* action */
 private:
     qint64 m_channelIndex;
     QMap<qint64, QString> m_toChannelName;
@@ -61,11 +64,11 @@ public slots:
     void updatePlayList();
 
 
-     // instruction
+     /* instruction process */
 public slots:
     void ins_process(qint64 uAct_name, QString uAct_val); // prase and execute instructions
 
-    // page button
+    /* page jump */
 signals:
     void show_tcpClient();
     void show_mainWindow();

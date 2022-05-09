@@ -51,6 +51,7 @@ public:
 signals:
     void evoke_music(qint64 uAct_name, QString uAct_val);
     void evoke_homePage(qint64 uAct_name, QString uAct_val);
+    void evoke_setStatus(bool stat);
 
     /* tcp-server functions */
 public slots:

@@ -37,6 +37,16 @@ tcpController::tcpController(QMainWindow *parent)
   ui->volumeSlider->setRange(0, 100);
   ui->volumeSlider->setTracking(false);
   ui->positionSlider->setTracking(false); // emit after relase slider
+  m_syncBar = new RoundProgressBar(ui->groupBox_docker);
+  m_syncBar->setOutterBarWidth(11);
+  m_syncBar->setInnerBarWidth(9);
+  m_syncBar->setControlFlags(RoundProgressBar::all);
+  m_syncBar->hide();
+//  m_loadBar = new RoundProgressBar(ui->groupBox_docker);
+//  m_loadBar->setOutterBarWidth(11);
+//  m_loadBar->setInnerBarWidth(9);
+//  m_loadBar->setControlFlags(RoundProgressBar::all);
+//  m_loadBar->hide();
 
   /* tcp connect */
   connect(m_tcpServer, &QTcpServer::newConnection, this,
@@ -68,6 +78,16 @@ tcpController::~tcpController()
     if (m_outFile.file.isOpen())
     {
         m_outFile.file.close();
+    }
+    if (m_syncBar)
+    {
+        delete m_syncBar;
+        m_syncBar = nullptr;
+    }
+    if (m_loadBar)
+    {
+        delete m_loadBar;
+        m_loadBar = nullptr;
     }
 }
 
@@ -156,6 +176,14 @@ void tcpController::ReadData() {
     ui->plainTextEditRecv->appendPlainText(buffer);
     if (QString(buffer) == "recv finish") // file send successfully
     {
+        m_hasSend++;
+        m_syncBar->setValue(m_hasSend);
+        if (m_hasSend >= m_totalSend)
+        {
+            qDebug() << "all files send successfully" << endl;
+            m_totalSend = m_hasSend = 0;
+            m_syncBar->hide();
+        }
         qDebug() << tr("send file to device %1 success").arg(identityController::getInstance().whichId(m_ListTcpClient[i])) << endl;
     }
     IP_Port_Pre = IP_Port;
@@ -470,13 +498,15 @@ void tcpController::on_pushButton_PlayList_clicked()
     filters << QString("*.mp3");
 
     ui->ListWidget_musicName->clear();
+    qint64 nCnt = 0; // number of music file
 
     for (auto path: m_musicDir)
     {
         /* check illegal chara */
-        QDirIterator dir_iterator_check(path.path(), filters, QDir::Files | QDir::NoSymLinks,QDirIterator::Subdirectories);
+        QDirIterator dir_iterator_check(path.path(), filters, QDir::Files | QDir::NoSymLinks);
         while (dir_iterator_check.hasNext())
         {
+            nCnt ++;
             dir_iterator_check.next();
             /* 如果文件名中出现了#或者_字符或空格强制改为字符~ */
             QDir dir(dir_iterator_check.path());
@@ -495,21 +525,62 @@ void tcpController::on_pushButton_PlayList_clicked()
             }
         }
         /* read music info */
-        QDirIterator dir_iterator(path.path(), filters, QDir::Files | QDir::NoSymLinks,QDirIterator::Subdirectories);
+        qDebug() << "nCnt = " << nCnt << endl;
+//        m_loadBar->setRange(0, nCnt);
+        nCnt = 0;
+//        m_loadBar->setValue(nCnt);
+//        m_loadBar->show();
+
+        QDirIterator dir_iterator(path.path(), filters, QDir::Files | QDir::NoSymLinks);
         while (dir_iterator.hasNext())
         {
             dir_iterator.next();
             m_musicInfoList.append(dir_iterator.fileInfo());
             qDebug()<<"name:"<<dir_iterator.fileInfo().fileName()<<"path:"<<dir_iterator.fileInfo().filePath();
-            ui->ListWidget_musicName->addItem(dir_iterator.fileName().section('.', 0, 0));
+            qint64 nChannels = -1;
+            if (m_musicChannels.find(dir_iterator.fileInfo().fileName()) == m_musicChannels.end())
+            {
+                emit evoke_getChannels(dir_iterator.fileInfo().absoluteFilePath(), nChannels);
+                if (nChannels == -1)
+                {
+                    qDebug() << "get channels error" << endl;
+                }
+                m_musicChannels[dir_iterator.fileInfo().fileName()] = nChannels;
+            }
+            else
+            {
+                nChannels = m_musicChannels[dir_iterator.fileInfo().fileName()];
+            }
+//            m_loadBar->setValue(nCnt++);
+            ui->ListWidget_musicName->addItem(dir_iterator.fileName().section('.', 0, 0) + tr("  %1 声道").arg(nChannels));
         }
     }
+//    m_loadBar->hide();
+
+    m_totalSend = 0;
+    qint64 nClientNumber = m_ListTcpClient.size();
     if (!m_musicInfoList.empty()) m_curSelectSong = m_musicInfoList.at(0); // select first one by default
     for (auto music: m_musicInfoList)
     {
-        emit evoke_split2(music.absoluteFilePath());
+        qint64 nChannels = m_musicChannels[music.fileName()];
+        if ( nChannels == 2)
+        {
+            emit evoke_split2(music.absoluteFilePath());
+            m_totalSend += nClientNumber * 2;
+        }
+        else if (nChannels == 6)
+        {
+            emit evoke_split6(music.absoluteFilePath());
+            m_totalSend += nClientNumber * 6;
+        }
+        else
+        {
+            qDebug() << __FUNCTION__ << "file name : " << music.fileName() << endl << "invalid channels : " << nChannels << endl;
+        }
     }
-    qDebug() << "sync end" << endl;
+    m_syncBar->setRange(0, m_totalSend);
+    m_syncBar->setValue(0);
+    m_syncBar->show();
 }
 
 void tcpController::on_ListWidget_musicName_doubleClicked(const QModelIndex &index)
@@ -544,7 +615,8 @@ void tcpController::setPosition(int pos)
 bool tcpController::setPlayerSource()
 {
     QString ins;
-    QString fileName = ui->ListWidget_musicName->currentIndex().data().toString();
+//    QString fileName = ui->ListWidget_musicName->currentIndex().data().toString();
+    QString fileName = m_musicInfoList[ui->ListWidget_musicName->currentRow()].fileName().section('.', 0, 0);
     qDebug() << "set source file name: " << fileName << endl;
     ins = (codecodeSys::code_act(ACT_OBJECT_PLAYER, ACT_NAME_SET_SOURCE, fileName));
     sendData2all(ins.toUtf8());

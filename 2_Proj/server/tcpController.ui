@@ -115,7 +115,7 @@ border-radius: 20px;
                  <widget class="QListWidget" name="ListWidget_musicName">
                   <property name="minimumSize">
                    <size>
-                    <width>0</width>
+                    <width>300</width>
                     <height>0</height>
                    </size>
                   </property>
@@ -132,6 +132,9 @@ border-radius: 20px;
                   </property>
                   <property name="horizontalScrollBarPolicy">
                    <enum>Qt::ScrollBarAlwaysOff</enum>
+                  </property>
+                  <property name="sizeAdjustPolicy">
+                   <enum>QAbstractScrollArea::AdjustToContents</enum>
                   </property>
                  </widget>
                 </item>
@@ -307,6 +310,12 @@ border-radius: 20px;
                     <width>35</width>
                     <height>35</height>
                    </size>
+                  </property>
+                  <property name="cursor">
+                   <cursorShape>PointingHandCursor</cursorShape>
+                  </property>
+                  <property name="toolTip">
+                   <string>重播</string>
                   </property>
                   <property name="styleSheet">
                    <string notr="true">QPushButton
@@ -861,6 +870,12 @@ margin: -6 0px;
                     <width>35</width>
                     <height>35</height>
                    </size>
+                  </property>
+                  <property name="cursor">
+                   <cursorShape>PointingHandCursor</cursorShape>
+                  </property>
+                  <property name="toolTip">
+                   <string>更新列表和同步曲库</string>
                   </property>
                   <property name="styleSheet">
                    <string notr="true">QPushButton

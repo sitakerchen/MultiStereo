@@ -19,6 +19,7 @@ INCLUDEPATH += ./
 SOURCES += \
     ../public/codecodesys.cpp \
     ../public/delayCalculator.cpp \
+    ../public/loadinganima.cpp \
     ../public/mediafile.cpp \
     homePage.cpp \
     identitycontroller.cpp \
@@ -30,6 +31,7 @@ SOURCES += \
 HEADERS += \
     ../public/codecodesys.h \
     ../public/delayCalculator.h \
+    ../public/loadinganima.h \
     ../public/macro.h \
     ../public/mediafile.h \
     homePage.h \

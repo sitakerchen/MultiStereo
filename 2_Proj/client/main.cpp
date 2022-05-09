@@ -23,7 +23,9 @@ int main(int argc, char *argv[]) {
 
   /* home page */
   QObject::connect(&client, &tcpclient::evoke_homePage, &w, &homePage::ins_process);
+  QObject::connect(&client, &tcpclient::evoke_setStatus, &w, &homePage::setStatus);
+  QObject::connect(&player, &MusicPlayer::evoke_setChannel, &w, &homePage::setChannel);
 
-  w.show();
+  w.ShowMyself();
   return a.exec();
 }
