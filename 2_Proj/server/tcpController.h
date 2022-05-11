@@ -70,6 +70,7 @@ private:
     QMediaPlayer m_player;
     QAudioOutput m_audioOutput;
     QFileInfo m_curSelectSong;
+    qint64 m_playMode;
 
 public slots:
     void delay_ms(qint64 ms = 0);
@@ -116,6 +117,8 @@ public slots:
     void on_pushButtonClearWindow_clicked(); // 清除接收窗口内容
 
 
+private slots:
+    void on_btnPlayMode_clicked();
 };
 
 #endif // TCPCONTROLLER_H

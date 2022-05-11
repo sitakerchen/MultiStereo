@@ -14,6 +14,7 @@ tcpController::tcpController(QMainWindow *parent)
 
   /* initiate variables */
   m_bIsListening = false;
+  m_playMode = PLAYER_PLAY_MODE_LIST_CYCLE;
 
   /* 初始化配置 */
   setWindowTitle(tr("controller"));
@@ -30,7 +31,7 @@ tcpController::tcpController(QMainWindow *parent)
   ui->lineEditIP->setText("192.168.123.100");
   ui->lineEditPort->setText("30000");
   on_pushButtonDisconnect_clicked(); // default switch on listening
-  m_musicDir.append(QDir("D:/Dev/CourseDesign/MultiStereo/3_Resource/MusicLibrary_raw/"));
+  m_musicDir.append(QDir("../../../3_Resource/MusicLibrary_raw/"));
 
   /* init widget */
   ui->volumeSlider->setVisible(false);
@@ -69,7 +70,24 @@ tcpController::tcpController(QMainWindow *parent)
   });
   connect(&m_player, &QMediaPlayer::positionChanged, this, &tcpController::updatePosition);
   connect(&m_player, &QMediaPlayer::durationChanged, this, &tcpController::updateDuration);
-
+  connect(&m_player, &QMediaPlayer::playbackStateChanged, this, [=](QMediaPlayer::PlaybackState newState){
+      qDebug() << "state changed" << endl;
+     if (m_player.position() >= m_player.duration())
+     {
+         switch (m_playMode)
+         {
+         case PLAYER_PLAY_MODE_LIST_CYCLE:
+             on_btnNext_clicked();
+             break;
+         case PLAYER_PLAY_MODE_SINGLE_CYCLE:
+             on_pushButton_rePlay_clicked();
+             break;
+         default:
+             break;
+         }
+     }
+     updatePlayBtnIcon();
+  });
 }
 
 tcpController::~tcpController()
@@ -424,7 +442,7 @@ void tcpController::delay_ms(qint64 ms)
 
 void tcpController::updatePosition(qint64 pos)
 {
-    ui->positionSlider->setValue(static_cast<int>(pos));
+    ui->positionSlider->setValue(pos);
     ui->Label_position->setText(forMatTime(pos));
     ui->Label_position_2->setText(forMatTime(m_player.duration()));
 }
@@ -482,7 +500,6 @@ void tcpController::on_btnPlay_clicked()
         delay_ms();
         m_player.pause();
     }
-    updatePlayBtnIcon();
 }
 
 
@@ -587,8 +604,10 @@ void tcpController::on_ListWidget_musicName_doubleClicked(const QModelIndex &ind
 {
     m_curSelectSong = m_musicInfoList.at(index.row()); // set current song
     setPlayerSource();
-    on_pushButton_rePlay_clicked(); // 双击设定曲目后播放
-    updatePlayBtnIcon();
+    on_btnPlay_clicked(); // 双击设定曲目后播放
+    on_btnPlay_clicked(); // 双击设定曲目后播放
+    setPosition(0);
+    setPosition(0);
 }
 
 void tcpController::setChannel(qint64 id, qint64 channelNumber)
@@ -642,7 +661,6 @@ qint64 tcpController::assignId()
     return 0;
 }
 
-
 void tcpController::on_pushButton_rePlay_clicked()
 {
     if (m_musicInfoList.empty())
@@ -659,7 +677,6 @@ void tcpController::on_pushButton_rePlay_clicked()
     delay_ms();
     m_player.stop();
     m_player.play();
-    updatePlayBtnIcon();
 }
 
 
@@ -677,8 +694,10 @@ void tcpController::on_btnPre_clicked()
     m_curSelectSong = m_musicInfoList.at(nCurRow);
 
     setPlayerSource();
-    on_pushButton_rePlay_clicked();
-    updatePlayBtnIcon();
+    on_btnPlay_clicked();
+    on_btnPlay_clicked();
+    setPosition(0);
+    setPosition(0);
 }
 
 
@@ -696,8 +715,10 @@ void tcpController::on_btnNext_clicked()
     m_curSelectSong = m_musicInfoList.at(nCurRow);
 
     setPlayerSource();
-    on_pushButton_rePlay_clicked();
-    updatePlayBtnIcon();
+    on_btnPlay_clicked();
+    on_btnPlay_clicked();
+    setPosition(0);
+    setPosition(0);
 }
 
 
@@ -718,6 +739,21 @@ void tcpController::on_btnVolume_clicked()
         ui->volumeSlider->show();
     }else{
         ui->volumeSlider->hide();
+    }
+}
+
+
+void tcpController::on_btnPlayMode_clicked()
+{
+    qint64 nTotal = 2;
+    m_playMode = (m_playMode + 1) % nTotal;
+    if (m_playMode == PLAYER_PLAY_MODE_LIST_CYCLE)
+    {
+        ui->btnPlayMode->setIcon(QIcon(":/image/image/image/24gl-repeat.png"));
+    }
+    else if (m_playMode == PLAYER_PLAY_MODE_SINGLE_CYCLE)
+    {
+        ui->btnPlayMode->setIcon(QIcon(":/image/image/image/24gl-repeatOnce.png"));
     }
 }
 

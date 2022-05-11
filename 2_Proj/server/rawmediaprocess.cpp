@@ -34,7 +34,7 @@ void rawMediaProcess::delay_ms(qint64 ms)
 void rawMediaProcess::on_pushButtonChoose1stereo_clicked()
 {
     PC::getInstance().setWorkingPath(m_workingPath + m_rawMediaFolder);
-    m_urlAudioFile = QFileDialog::getOpenFileUrl(this, "open Audio File", QUrl(), "WAV MP3 files(*.mp3 *.wav)");
+    m_urlAudioFile = QFileDialog::getOpenFileUrl(this, tr("open Audio File"), QUrl(QDir::currentPath() + "/../../../3_Resource/MusicLibrary_raw/"),"WAV MP3 files(*.mp3 *.wav)");
     if ( ! m_urlAudioFile.isEmpty() )
     {
         qDebug() << "m_urlAudioFile path: " << m_urlAudioFile.path() << Qt::endl; // print the url-Link-Path of AudioFile
