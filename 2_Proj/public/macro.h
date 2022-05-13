@@ -2,6 +2,12 @@
 #define MACRO_H
 #include <QObject>
 using qs = QString;
+
+/* player play mode */
+const qint64 PLAYER_PLAY_MODE_LIST_CYCLE = 0; // 列表循环
+const qint64 PLAYER_PLAY_MODE_SINGLE_CYCLE = 1; // 单曲循环
+
+
 /* file channel index */
 
 // 2 channel
@@ -50,6 +56,9 @@ const QString PATH_ANDROID_ROOT = "/storage/emulated/0/";
 const QString PATH_ANDROID_BASE = "/storage/emulated/0/Documents/";
 const QString PATH_ANDROID_APP_HOME = "/storage/emulated/0/Documents/Client/";
 const QString PATH_ANDROID_APP_MUSIC = "/storage/emulated/0/Documents/Client/Music/";
+
+/* IOS */
+
 
 /* error code */
 

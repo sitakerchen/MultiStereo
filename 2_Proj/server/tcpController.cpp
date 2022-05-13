@@ -74,7 +74,10 @@ tcpController::tcpController(QMainWindow *parent)
       qDebug() << "state changed" << endl;
      if (m_player.position() >= m_player.duration())
      {
+<<<<<<< HEAD
          qDebug() << "cycle " << endl;
+=======
+>>>>>>> f1e2b6a34602f1ed54e80eabceaf24e7d4f110ed
          switch (m_playMode)
          {
          case PLAYER_PLAY_MODE_LIST_CYCLE:
@@ -487,6 +490,21 @@ QString tcpController::forMatTime(qint64 timeMilliSeconds)
 }
 
 
+<<<<<<< HEAD
+=======
+        delay_ms();
+        m_player.play();
+    }
+    else
+    {
+        ins = (INS_PAUSE);
+        sendData2all(ins.toUtf8());
+
+        delay_ms();
+        m_player.pause();
+    }
+}
+>>>>>>> f1e2b6a34602f1ed54e80eabceaf24e7d4f110ed
 
 
 void tcpController::on_pushButton_PlayList_clicked()
@@ -591,9 +609,16 @@ void tcpController::on_ListWidget_musicName_doubleClicked(const QModelIndex &ind
     m_curSelectSong = m_musicInfoList.at(index.row()); // set current song
 
     setPlayerSource();
+<<<<<<< HEAD
     on_btnPlay_clicked();
     on_btnPlay_clicked();
     setPosition_force(0);
+=======
+    on_btnPlay_clicked(); // 双击设定曲目后播放
+    on_btnPlay_clicked(); // 双击设定曲目后播放
+    setPosition(0);
+    setPosition(0);
+>>>>>>> f1e2b6a34602f1ed54e80eabceaf24e7d4f110ed
 }
 
 void tcpController::setChannel(qint64 id, qint64 channelNumber)
@@ -736,7 +761,12 @@ void tcpController::on_btnPre_clicked()
     setPlayerSource();
     on_btnPlay_clicked();
     on_btnPlay_clicked();
+<<<<<<< HEAD
     setPosition_force(0);
+=======
+    setPosition(0);
+    setPosition(0);
+>>>>>>> f1e2b6a34602f1ed54e80eabceaf24e7d4f110ed
 }
 
 
@@ -756,7 +786,12 @@ void tcpController::on_btnNext_clicked()
     setPlayerSource();
     on_btnPlay_clicked();
     on_btnPlay_clicked();
+<<<<<<< HEAD
     setPosition_force(0);
+=======
+    setPosition(0);
+    setPosition(0);
+>>>>>>> f1e2b6a34602f1ed54e80eabceaf24e7d4f110ed
 }
 
 
@@ -794,3 +829,7 @@ void tcpController::on_btnPlayMode_clicked()
         ui->btnPlayMode->setIcon(QIcon(":/image/image/image/24gl-repeatOnce.png"));
     }
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> f1e2b6a34602f1ed54e80eabceaf24e7d4f110ed

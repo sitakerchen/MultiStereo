@@ -70,5 +70,6 @@
         <file>image/image/24gl-pause.png</file>
         <file>image/image/24gl-volumeHigh.png</file>
         <file>image/image/24gl-refresh.png</file>
+        <file>image/image/24gl-repeatOnce.png</file>
     </qresource>
 </RCC>

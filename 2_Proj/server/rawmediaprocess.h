@@ -35,7 +35,7 @@ private:
     /* file */
 private:
     QUrl m_urlAudioFile;
-    QString m_workingPath = "D:/Dev/CourseDesign/MultiStereo/3_Resource/";
+    QString m_workingPath = QDir::currentPath() + "/../../../3_Resource/";
     QString m_rawMediaFolder = "MusicLibrary_raw/";
     QString m_mediaFolder = "MusicLibary/";
     QString m_ffmpegFileInfo;

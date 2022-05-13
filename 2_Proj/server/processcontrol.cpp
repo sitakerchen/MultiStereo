@@ -49,7 +49,7 @@ bool ProcessControl::setWorkingPath(QString qstrPath)
     QDir dirPath(qstrPath);
     if (dirPath.exists() == false)
     {
-        qDebug() << " path not exist" << endl;
+        qDebug() << dirPath << " path not exist" << endl;
         return false;
     }
 
