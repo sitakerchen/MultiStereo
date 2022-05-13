@@ -70,9 +70,11 @@ private:
     QMediaPlayer m_player;
     QAudioOutput m_audioOutput;
     QFileInfo m_curSelectSong;
+    qint64 m_playMode;
 
 public slots:
-    void delay_ms(qint64 ms = 0);
+    void delay_ms();
+    void delay_ms(qint64 ms);
     void updatePosition(qint64 pos);  // no need
     void updateDuration(qint64 duration); // no need to send which can do by itself
     void updatePlayBtnIcon(); // no need
@@ -87,6 +89,9 @@ public slots:
     void on_ListWidget_musicName_doubleClicked(const QModelIndex &index); // no need, do it in setPlayerSource
     void setChannel(qint64 id, qint64 channelNumber); //
     void setPosition(int pos); //
+    void setPosition_force(int pos); // 强制设置播放进度
+    void play_force();
+    void pause_force();
     bool setPlayerSource(); //
     bool setPlayerSource(QString abPath);  // no need
     qint64 assignId();
@@ -97,7 +102,7 @@ private:
     QVector<QDir> m_musicDir; // dir that contains music
     QList<QFileInfo> m_musicInfoList; // file info list of all accessible music
     QMap<QString, qint64> m_musicChannels; // channels of each music
-    QString m_MusicLibBasePath = "D:/Dev/CourseDesign/MultiStereo/3_Resource/MusicLibary/"; // base bath of music library
+    QString m_MusicLibBasePath = QDir::currentPath() + "/../../../3_Resource/MusicLibary/"; // base bath of music library
 
 public slots:
     void on_pushButton_chooseFile_clicked(); // choose a file to be send
@@ -116,6 +121,8 @@ public slots:
     void on_pushButtonClearWindow_clicked(); // 清除接收窗口内容
 
 
+private slots:
+    void on_btnPlayMode_clicked();
 };
 
 #endif // TCPCONTROLLER_H
